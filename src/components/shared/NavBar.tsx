@@ -25,7 +25,7 @@ export function NavBar() {
   const haptic = useHapticProps()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/80 backdrop-blur-lg">
+    <header className="sticky top-0 z-40 border-b border-ink/10 bg-background/80 backdrop-blur-lg">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2 text-text-primary font-semibold">
           <Hexagon size={22} className="text-accent" fill="#3b82f6" fillOpacity={0.2} />
@@ -51,7 +51,7 @@ export function NavBar() {
             type="button"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMenuOpen((o) => !o)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-text-primary"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-ink/5 text-text-primary"
           >
             {menuOpen ? <X size={18} /> : <Menu size={18} />}
           </motion.button>
@@ -65,7 +65,7 @@ export function NavBar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden overflow-hidden border-t border-white/10 bg-surface/95"
+            className="md:hidden overflow-hidden border-t border-ink/10 bg-surface/95"
           >
             <div className="flex flex-col gap-1 px-4 py-3">
               {links.map((l) => (

@@ -19,13 +19,13 @@ export function SegmentedBar({ segments, height = 6, rounded = true }: Segmented
 
   return (
     <div
-      className={`flex w-full overflow-hidden bg-white/5 ${rounded ? 'rounded-full' : ''}`}
+      className={`flex w-full overflow-hidden bg-ink/5 ${rounded ? 'rounded-full' : ''}`}
       style={{ height }}
       role="img"
       aria-label="Learning type balance"
     >
       {total === 0 ? (
-        <div className="h-full w-full bg-white/10" />
+        <div className="h-full w-full bg-ink/10" />
       ) : (
         segments
           .filter((seg) => seg.weight > 0)

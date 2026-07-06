@@ -29,7 +29,7 @@ export function DarkModeToggle() {
       onClick={toggle}
       type="button"
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-text-primary hover:bg-white/10 transition-colors"
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-ink/5 text-text-primary hover:bg-ink/10 transition-colors"
     >
       {isDark ? <Sun size={18} /> : <Moon size={18} />}
     </motion.button>

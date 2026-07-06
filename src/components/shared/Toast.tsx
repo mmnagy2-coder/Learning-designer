@@ -63,7 +63,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 exit={{ opacity: 0, y: 12 }}
                 transition={{ duration: 0.2 }}
                 role="status"
-                className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-100 shadow-xl backdrop-blur-lg"
+                className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-ink/10 bg-ink/5 px-4 py-3 text-sm text-strong shadow-xl backdrop-blur-lg"
               >
                 <Icon size={16} className={colors[t.variant]} />
                 {t.message}

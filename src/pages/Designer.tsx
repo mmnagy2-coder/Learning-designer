@@ -27,102 +27,56 @@ import { TLAColumn } from '../components/designer/TLAColumn'
 import { AnalysisTab } from '../components/designer/AnalysisTab'
 import { downloadDesignAsJson, downloadDesignAsMarkdown, copyDesignToClipboard } from '../utils/exportDesign'
 import { parseImportedDesign } from '../utils/importDesign'
-
-function blankDesign(): Design {
-  const now = new Date().toISOString()
-  return {
-    id: crypto.randomUUID(),
-    name: 'Untitled Design',
-    topic: '',
-    learningTimeMinutes: 120,
-    sizeOfClass: 20,
-    description: '',
-    modeOfDelivery: 'blended',
-    aims: '',
-    outcomes: [],
-    tlas: [],
-    createdAt: now,
-    updatedAt: now,
-    isPublic: false,
-  }
-}
-
-function newTLA(): TLA {
-  return {
-    id: crypto.randomUUID(),
-    title: 'New Activity',
-    notes: '',
-    resources: [],
-    learningTypes: [
-      {
-        id: crypto.randomUUID(),
-        type: 'acquisition',
-        durationMinutes: 15,
-        groupSize: 1,
-        teacherPresent: false,
-        isOnline: false,
-        isSynchronous: true,
-        assessmentType: 'none',
-        description: '',
-      },
-    ],
-  }
-}
+import { blankDesign, newTLA } from '../utils/designFactory'
 
 export function Designer() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { designs, loaded, getDesign, saveDesign } = useDesigns()
   const idParam = searchParams.get('id')
-  const [effectiveId, setEffectiveId] = useState<string | null>(null)
+  const creatingRef = useRef(false)
 
-  // Resolve which design id this page instance should render: the URL param if valid,
-  // otherwise the most recent design, otherwise a freshly created blank one.
+  // The URL is the single source of truth for which design is open. The design object is
+  // resolved fresh on every render, so a just-saved design is picked up as soon as state
+  // propagates — the editor never invents its own fallback copy (that caused duplicate
+  // "Untitled Design" entries in an earlier version).
+  const design = idParam ? getDesign(idParam) : undefined
+
   useEffect(() => {
-    if (!loaded || effectiveId) return
-    if (idParam && getDesign(idParam)) {
-      setEffectiveId(idParam)
-      return
-    }
+    if (!loaded || design) return
     if (designs.length > 0) {
       const newest = [...designs].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0]
-      setEffectiveId(newest.id)
       setSearchParams({ id: newest.id }, { replace: true })
-    } else {
+    } else if (!creatingRef.current) {
+      creatingRef.current = true
       const blank = blankDesign()
       saveDesign(blank)
-      setEffectiveId(blank.id)
       setSearchParams({ id: blank.id }, { replace: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, idParam, designs.length])
+  }, [loaded, design, designs.length])
 
-  if (!effectiveId) {
+  if (!design) {
     return <div className="mx-auto max-w-6xl px-4 py-12 text-text-muted">Loading…</div>
   }
 
   return (
     <DesignerContent
-      key={effectiveId}
-      designId={effectiveId}
-      getDesign={getDesign}
+      key={design.id}
+      initialDesign={design}
       saveDesign={saveDesign}
-      onNavigateToDesign={(id) => {
-        setEffectiveId(id)
-        setSearchParams({ id })
-      }}
+      onNavigateToDesign={(id) => setSearchParams({ id })}
     />
   )
 }
 
 interface DesignerContentProps {
-  designId: string
-  getDesign: (id: string) => Design | undefined
+  initialDesign: Design
   saveDesign: (design: Design) => void
   onNavigateToDesign: (id: string) => void
 }
 
-function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }: DesignerContentProps) {
-  const [design, setDesign] = useState<Design>(() => getDesign(designId) ?? blankDesign())
+function DesignerContent({ initialDesign, saveDesign, onNavigateToDesign }: DesignerContentProps) {
+  const [design, setDesign] = useState<Design>(initialDesign)
   const [tab, setTab] = useState<'timeline' | 'analysis'>('timeline')
   const [justSaved, setJustSaved] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
@@ -257,7 +211,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
       <MetadataHeader design={design} onChange={setDesign} />
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+        <div className="flex gap-1 rounded-xl border border-ink/10 bg-ink/5 p-1">
           {(['timeline', 'analysis'] as const).map((t) => (
             <motion.button
               {...haptic}
@@ -279,7 +233,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
           </motion.button>
 
           <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} aria-label="Import design file" />
-          <motion.button {...haptic} type="button" onClick={handleImportClick} className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-text-primary">
+          <motion.button {...haptic} type="button" onClick={handleImportClick} className="flex items-center gap-1.5 rounded-xl border border-ink/10 bg-ink/5 px-3 py-2 text-sm text-text-primary">
             <Upload size={15} /> Import
           </motion.button>
 
@@ -290,7 +244,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
               onClick={() => setExportOpen((o) => !o)}
               aria-haspopup="menu"
               aria-expanded={exportOpen}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-text-primary"
+              className="flex items-center gap-1.5 rounded-xl border border-ink/10 bg-ink/5 px-3 py-2 text-sm text-text-primary"
             >
               <Download size={15} /> Export <ChevronDown size={14} />
             </motion.button>
@@ -301,7 +255,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   role="menu"
-                  className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-white/10 bg-elevated p-1 shadow-xl"
+                  className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-ink/10 bg-elevated p-1 shadow-xl"
                 >
                   <button
                     role="menuitem"
@@ -309,7 +263,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
                       downloadDesignAsJson(design)
                       setExportOpen(false)
                     }}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-white/5"
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-ink/5"
                   >
                     Download as JSON
                   </button>
@@ -319,7 +273,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
                       downloadDesignAsMarkdown(design)
                       setExportOpen(false)
                     }}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-white/5"
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-ink/5"
                   >
                     Download as Markdown
                   </button>
@@ -334,7 +288,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
                         showToast('Could not copy to clipboard', 'error')
                       }
                     }}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-white/5"
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-ink/5"
                   >
                     Copy to Clipboard
                   </button>
@@ -343,7 +297,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
             </AnimatePresence>
           </div>
 
-          <motion.button {...haptic} type="button" onClick={handleShare} className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-text-primary">
+          <motion.button {...haptic} type="button" onClick={handleShare} className="flex items-center gap-1.5 rounded-xl border border-ink/10 bg-ink/5 px-3 py-2 text-sm text-text-primary">
             <Share2 size={15} /> Share
           </motion.button>
 
@@ -351,7 +305,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
             {...haptic}
             type="button"
             onClick={handleManualSave}
-            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-text-primary"
+            className="flex items-center gap-1.5 rounded-xl border border-ink/10 bg-ink/5 px-3 py-2 text-sm text-text-primary"
           >
             <AnimatePresence mode="wait">
               {justSaved ? (
@@ -383,7 +337,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
             </motion.button>
 
             {design.tlas.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-white/10 p-12 text-center text-text-muted">
+              <div className="rounded-2xl border border-dashed border-ink/10 p-12 text-center text-text-muted">
                 Add a TLA to start building your session.
               </div>
             ) : isMobile ? (
@@ -399,6 +353,7 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
                     onMoveDown={() => moveTLA(i, 1)}
                     canMoveUp={i > 0}
                     canMoveDown={i < design.tlas.length - 1}
+                    designTopic={design.topic}
                   />
                 ))}
               </div>
@@ -415,7 +370,13 @@ function DesignerContent({ designId, getDesign, saveDesign, onNavigateToDesign }
                   >
                     <AnimatePresence initial={false}>
                       {design.tlas.map((tla) => (
-                        <TLAColumn key={tla.id} tla={tla} onChange={(updated) => updateTLA(tla.id, updated)} onDelete={() => deleteTLA(tla.id)} />
+                        <TLAColumn
+                          key={tla.id}
+                          tla={tla}
+                          onChange={(updated) => updateTLA(tla.id, updated)}
+                          onDelete={() => deleteTLA(tla.id)}
+                          designTopic={design.topic}
+                        />
                       ))}
                     </AnimatePresence>
                   </div>

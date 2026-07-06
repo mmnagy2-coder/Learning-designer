@@ -18,7 +18,7 @@ export function LearningTypePieChart({ data, size = 200, innerRadius = 0, showTo
     return (
       <div
         style={{ width: size, height: size }}
-        className="flex items-center justify-center rounded-full border border-dashed border-white/10 text-xs text-text-muted"
+        className="flex items-center justify-center rounded-full border border-dashed border-ink/10 text-xs text-text-muted"
       >
         No data
       </div>

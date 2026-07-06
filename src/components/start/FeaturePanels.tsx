@@ -18,10 +18,10 @@ export function FeaturePanels() {
     >
       <motion.div
         variants={item}
-        className="rounded-2xl border border-blue-500/30 bg-white/5 p-8 shadow-xl backdrop-blur-lg"
+        className="rounded-2xl border border-blue-500/30 bg-ink/5 p-8 shadow-xl backdrop-blur-lg"
       >
         <Palette className="mb-4 text-accent" size={28} />
-        <h3 className="mb-2 text-xl font-semibold text-slate-100">Express your pedagogy</h3>
+        <h3 className="mb-2 text-xl font-semibold text-strong">Express your pedagogy</h3>
         <p className="text-text-muted">
           Sequence Teaching &amp; Learning Activities across six research-backed learning types —
           Acquisition, Collaboration, Discussion, Inquiry, Practice, and Production — and see the
@@ -31,10 +31,10 @@ export function FeaturePanels() {
 
       <motion.div
         variants={item}
-        className="rounded-2xl border border-green-500/30 bg-white/5 p-8 shadow-xl backdrop-blur-lg"
+        className="rounded-2xl border border-green-500/30 bg-ink/5 p-8 shadow-xl backdrop-blur-lg"
       >
         <Share2 className="mb-4 text-production" size={28} />
-        <h3 className="mb-2 text-xl font-semibold text-slate-100">Create and share designs</h3>
+        <h3 className="mb-2 text-xl font-semibold text-strong">Create and share designs</h3>
         <p className="text-text-muted">
           Build a library of reusable session designs, export them as JSON or a student-facing
           markdown guide, and share a link so a colleague can open your design directly.

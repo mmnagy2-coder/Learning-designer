@@ -25,11 +25,11 @@ function MiniDonut({ title, splits }: { title: string; splits: BinarySplit[] }) 
   const data = splits.filter((s) => s.minutes > 0)
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center shadow-xl backdrop-blur-lg">
-      <h4 className="mb-2 text-sm font-medium text-slate-100">{title}</h4>
+    <div className="rounded-2xl border border-ink/10 bg-ink/5 p-4 text-center shadow-xl backdrop-blur-lg">
+      <h4 className="mb-2 text-sm font-medium text-strong">{title}</h4>
       <div className="mx-auto h-32 w-32">
         {total === 0 ? (
-          <div className="flex h-full w-full items-center justify-center rounded-full border border-dashed border-white/10 text-xs text-text-muted">
+          <div className="flex h-full w-full items-center justify-center rounded-full border border-dashed border-ink/10 text-xs text-text-muted">
             No data
           </div>
         ) : (
@@ -65,7 +65,7 @@ export function AnalysisTab({ design }: AnalysisTabProps) {
 
   if (analytics.totalMinutes === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-white/10 p-16 text-center text-text-muted">
+      <div className="rounded-2xl border border-dashed border-ink/10 p-16 text-center text-text-muted">
         Add TLAs with durations to see your analysis
       </div>
     )
@@ -75,8 +75,8 @@ export function AnalysisTab({ design }: AnalysisTabProps) {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-lg">
-        <h3 className="mb-4 text-lg font-semibold text-slate-100">Learning type balance</h3>
+      <div className="rounded-2xl border border-ink/10 bg-ink/5 p-6 shadow-xl backdrop-blur-lg">
+        <h3 className="mb-4 text-lg font-semibold text-strong">Learning type balance</h3>
         <div className="flex flex-col items-center gap-6 sm:flex-row">
           <div className="h-64 w-64 shrink-0">
             <ResponsiveContainer width="100%" height="100%">
@@ -103,10 +103,10 @@ export function AnalysisTab({ design }: AnalysisTabProps) {
           </div>
           <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3">
             {analytics.byLearningType.map((t) => (
-              <div key={t.type} className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2 text-sm">
+              <div key={t.type} className="flex items-center gap-2 rounded-xl bg-ink/5 px-3 py-2 text-sm">
                 <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: t.color }} />
                 <div>
-                  <div className="font-medium text-slate-100">{t.label}</div>
+                  <div className="font-medium text-strong">{t.label}</div>
                   <div className="text-xs text-text-muted">
                     <CountUp value={t.percent} decimals={0} suffix="%" /> · {t.minutes} min
                   </div>
@@ -124,8 +124,8 @@ export function AnalysisTab({ design }: AnalysisTabProps) {
         <MiniDonut title="Formative vs Summative" splits={analytics.assessment} />
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-lg">
-        <h3 className="mb-4 text-lg font-semibold text-slate-100">Individual vs Group vs Whole class</h3>
+      <div className="rounded-2xl border border-ink/10 bg-ink/5 p-6 shadow-xl backdrop-blur-lg">
+        <h3 className="mb-4 text-lg font-semibold text-strong">Individual vs Group vs Whole class</h3>
         <SegmentedBar
           segments={analytics.groupSize.map((g) => ({ key: g.label, color: GROUP_SIZE_COLORS[g.label], weight: g.minutes }))}
           height={20}
@@ -141,15 +141,15 @@ export function AnalysisTab({ design }: AnalysisTabProps) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center shadow-xl backdrop-blur-lg">
+        <div className="rounded-2xl border border-ink/10 bg-ink/5 p-6 text-center shadow-xl backdrop-blur-lg">
           <p className="text-xs uppercase tracking-wide text-text-muted">Designed time</p>
           <div className="mt-1 text-3xl font-bold text-accent">
             <CountUp value={analytics.totalMinutes} suffix=" min" />
           </div>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center shadow-xl backdrop-blur-lg">
+        <div className="rounded-2xl border border-ink/10 bg-ink/5 p-6 text-center shadow-xl backdrop-blur-lg">
           <p className="text-xs uppercase tracking-wide text-text-muted">Target learning time</p>
-          <div className="mt-1 text-3xl font-bold text-slate-100">
+          <div className="mt-1 text-3xl font-bold text-strong">
             <CountUp value={design.learningTimeMinutes} suffix=" min" />
           </div>
         </div>

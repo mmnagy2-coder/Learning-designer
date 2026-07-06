@@ -74,11 +74,11 @@ export function Directory({ designs, loaded }: DirectoryProps) {
           onChange={(e) => setKeyword(e.target.value)}
           placeholder="Search by name or topic"
           aria-label="Search designs"
-          className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+          className="w-full rounded-xl border border-ink/10 bg-ink/5 py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
         />
       </div>
 
-      <Collapsible title="Advanced Filters" className="mb-6 rounded-2xl border border-white/10 bg-white/5 px-4 backdrop-blur-lg">
+      <Collapsible title="Advanced Filters" className="mb-6 rounded-2xl border border-ink/10 bg-ink/5 px-4 backdrop-blur-lg">
         <div className="space-y-4">
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-muted">Learning type</p>
@@ -91,7 +91,7 @@ export function Directory({ designs, loaded }: DirectoryProps) {
                   onClick={() => toggle(typeFilters, cfg.type, setTypeFilters)}
                   aria-pressed={typeFilters.has(cfg.type)}
                   className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                    typeFilters.has(cfg.type) ? 'border-accent bg-accent/20 text-accent' : 'border-white/10 text-text-muted'
+                    typeFilters.has(cfg.type) ? 'border-accent bg-accent/20 text-accent' : 'border-ink/10 text-text-muted'
                   }`}
                 >
                   {cfg.label}
@@ -110,7 +110,7 @@ export function Directory({ designs, loaded }: DirectoryProps) {
                   onClick={() => toggle(modeFilters, mode, setModeFilters)}
                   aria-pressed={modeFilters.has(mode)}
                   className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${
-                    modeFilters.has(mode) ? 'border-accent bg-accent/20 text-accent' : 'border-white/10 text-text-muted'
+                    modeFilters.has(mode) ? 'border-accent bg-accent/20 text-accent' : 'border-ink/10 text-text-muted'
                   }`}
                 >
                   {mode.replace(/-/g, ' ')}
@@ -130,7 +130,7 @@ export function Directory({ designs, loaded }: DirectoryProps) {
                     onClick={() => toggle(outcomeFilters, outcome, setOutcomeFilters)}
                     aria-pressed={outcomeFilters.has(outcome)}
                     className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                      outcomeFilters.has(outcome) ? 'border-accent bg-accent/20 text-accent' : 'border-white/10 text-text-muted'
+                      outcomeFilters.has(outcome) ? 'border-accent bg-accent/20 text-accent' : 'border-ink/10 text-text-muted'
                     }`}
                   >
                     {outcome}
@@ -143,7 +143,7 @@ export function Directory({ designs, loaded }: DirectoryProps) {
       </Collapsible>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/10 p-12 text-center text-text-muted">
+        <div className="rounded-2xl border border-dashed border-ink/10 p-12 text-center text-text-muted">
           No designs match your filters.
         </div>
       ) : (

@@ -46,19 +46,19 @@ export function DemoCharts({ designs, loaded }: DemoChartsProps) {
         viewport={{ once: true, amount: 0.3 }}
         className="grid grid-cols-1 gap-4 text-center sm:grid-cols-3"
       >
-        <motion.div variants={item} className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-lg">
+        <motion.div variants={item} className="rounded-2xl border border-ink/10 bg-ink/5 p-6 backdrop-blur-lg">
           <div className="text-3xl font-bold text-accent">
             <CountUp value={designs.length} />
           </div>
           <p className="mt-1 text-sm text-text-muted">Designs created</p>
         </motion.div>
-        <motion.div variants={item} className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-lg">
+        <motion.div variants={item} className="rounded-2xl border border-ink/10 bg-ink/5 p-6 backdrop-blur-lg">
           <div className="text-3xl font-bold text-accent">
             <CountUp value={totalMinutes / 60} decimals={1} suffix="h" />
           </div>
           <p className="mt-1 text-sm text-text-muted">Designed hours</p>
         </motion.div>
-        <motion.div variants={item} className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-lg">
+        <motion.div variants={item} className="rounded-2xl border border-ink/10 bg-ink/5 p-6 backdrop-blur-lg">
           <div className="text-3xl font-bold text-accent">
             <CountUp value={distinctTypes} />
           </div>
@@ -71,11 +71,11 @@ export function DemoCharts({ designs, loaded }: DemoChartsProps) {
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, amount: 0.3 }}
-        className="mt-10 flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-lg sm:flex-row sm:justify-center"
+        className="mt-10 flex flex-col items-center gap-4 rounded-2xl border border-ink/10 bg-ink/5 p-8 backdrop-blur-lg sm:flex-row sm:justify-center"
       >
         <LearningTypePieChart data={avg.byLearningType} size={220} />
         <div className="text-left">
-          <h3 className="text-lg font-semibold text-slate-100">Average balance across your designs</h3>
+          <h3 className="text-lg font-semibold text-strong">Average balance across your designs</h3>
           <p className="mt-1 max-w-sm text-sm text-text-muted">
             Averaged across all {designs.length} sample designs, weighted toward hands-on practice
             and production time.
@@ -89,9 +89,9 @@ export function DemoCharts({ designs, loaded }: DemoChartsProps) {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.3 }}
-          className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-lg"
+          className="mt-10 rounded-2xl border border-ink/10 bg-ink/5 p-8 backdrop-blur-lg"
         >
-          <h3 className="mb-4 text-lg font-semibold text-slate-100">Try it out: {design5.name}</h3>
+          <h3 className="mb-4 text-lg font-semibold text-strong">Try it out: {design5.name}</h3>
           <div className="flex flex-col items-center gap-6 sm:flex-row">
             <LearningTypePieChart data={design5Analytics.byLearningType} size={200} />
             <div className="text-left">

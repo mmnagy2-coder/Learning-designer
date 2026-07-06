@@ -4,6 +4,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme tokens as RGB triples so Tailwind alpha modifiers (e.g. bg-ink/5) keep working.
+   :root is the light theme; .dark on <html> switches every token at once. */
+:root {
+  --background: 244 246 251;
+  --surface: 255 255 255;
+  --elevated: 233 238 248;
+  --border: 203 213 225;
+  --text-primary: 15 23 42;
+  --text-muted: 71 85 105;
+  --text-strong: 15 23 42;
+  /* "ink" is the glass tint: translucent dark ink on light backgrounds. */
+  --ink: 15 23 42;
+  color-scheme: light;
+}
+
+.dark {
+  --background: 15 15 26;
+  --surface: 26 26 46;
+  --elevated: 22 33 62;
+  --border: 15 52 96;
+  --text-primary: 226 232 240;
+  --text-muted: 148 163 184;
+  --text-strong: 241 245 249;
+  /* Translucent white glass on dark backgrounds. */
+  --ink: 255 255 255;
+  color-scheme: dark;
+}
+
 html,
 body {
   @apply bg-background text-text-primary;
@@ -14,7 +42,7 @@ body {
 }
 
 * {
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-color: rgb(100 116 139 / 0.4) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -23,10 +51,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgb(100 116 139 / 0.35);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgb(100 116 139 / 0.55);
 }

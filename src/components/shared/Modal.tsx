@@ -42,7 +42,7 @@ export function Modal({ isOpen, onClose, children, labelledBy }: ModalProps) {
             exit={reduced ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.2 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 text-slate-100 shadow-xl backdrop-blur-lg"
+            className="w-full max-w-md rounded-2xl border border-ink/10 bg-ink/5 p-6 text-strong shadow-xl backdrop-blur-lg"
           >
             {children}
           </motion.div>

@@ -42,7 +42,7 @@ function IconToggle({
       title={active ? activeText : inactiveText}
       onClick={onClick}
       className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-xs ${
-        active ? 'border-accent/50 bg-accent/10 text-accent' : 'border-white/10 text-text-muted'
+        active ? 'border-accent/50 bg-accent/10 text-accent' : 'border-ink/10 text-text-muted'
       }`}
     >
       <Icon size={13} />
@@ -61,7 +61,7 @@ export function LearningTypeRow({ row, onChange, onDelete }: LearningTypeRowProp
   }
 
   return (
-    <div className="rounded-xl bg-white/5 py-3 pl-3 pr-2" style={{ borderLeft: `4px solid ${color}` }}>
+    <div className="rounded-xl bg-ink/5 py-3 pl-3 pr-2" style={{ borderLeft: `4px solid ${color}` }}>
       <div className="flex flex-wrap items-center gap-2">
         <label className="sr-only" htmlFor={`type-${row.id}`}>
           Learning type
@@ -70,7 +70,7 @@ export function LearningTypeRow({ row, onChange, onDelete }: LearningTypeRowProp
           id={`type-${row.id}`}
           value={row.type}
           onChange={(e) => patch({ type: e.target.value as LearningTypeRowModel['type'] })}
-          className="rounded-lg bg-white/5 px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+          className="rounded-lg bg-ink/5 px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
         >
           {LEARNING_TYPES.map((cfg) => (
             <option key={cfg.type} value={cfg.type} className="bg-surface">
@@ -88,7 +88,7 @@ export function LearningTypeRow({ row, onChange, onDelete }: LearningTypeRowProp
           min={0}
           value={row.durationMinutes}
           onChange={(e) => patch({ durationMinutes: Math.max(0, Number(e.target.value)) })}
-          className="w-20 rounded-lg bg-white/5 px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+          className="w-20 rounded-lg bg-ink/5 px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           aria-describedby={`duration-unit-${row.id}`}
         />
         <span id={`duration-unit-${row.id}`} className="text-xs text-text-muted">
@@ -106,7 +106,7 @@ export function LearningTypeRow({ row, onChange, onDelete }: LearningTypeRowProp
             min={1}
             value={row.groupSize}
             onChange={(e) => patch({ groupSize: Math.max(1, Number(e.target.value)) })}
-            className="w-16 rounded-lg bg-white/5 px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-16 rounded-lg bg-ink/5 px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
         </div>
 
@@ -159,7 +159,7 @@ export function LearningTypeRow({ row, onChange, onDelete }: LearningTypeRowProp
           }}
           className={`rounded-full border px-2 py-1 text-xs font-medium ${
             row.assessmentType === 'none'
-              ? 'border-white/10 text-text-muted'
+              ? 'border-ink/10 text-text-muted'
               : row.assessmentType === 'formative'
                 ? 'border-collaboration/50 bg-collaboration/10 text-collaboration'
                 : 'border-inquiry/50 bg-inquiry/10 text-inquiry'
@@ -180,7 +180,7 @@ export function LearningTypeRow({ row, onChange, onDelete }: LearningTypeRowProp
         onBlur={() => setDescFocused(false)}
         placeholder="Describe this activity..."
         rows={descFocused ? 3 : 1}
-        className="mt-2 w-full resize-none rounded-lg bg-white/5 px-2 py-1.5 text-sm text-text-primary placeholder:text-text-muted transition-all focus:outline-none focus:ring-2 focus:ring-accent"
+        className="mt-2 w-full resize-none rounded-lg bg-ink/5 px-2 py-1.5 text-sm text-text-primary placeholder:text-text-muted transition-all focus:outline-none focus:ring-2 focus:ring-accent"
       />
     </div>
   )

@@ -3,10 +3,13 @@
 // (My Designs, My Public Space, or the Collaborative placeholder) filling the remaining space.
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
+import { FilePlus2 } from 'lucide-react'
 import { useDesigns } from '../hooks/useDesigns'
 import { MyDesigns } from '../components/browser/MyDesigns'
 import { Directory } from '../components/browser/Directory'
 import { useHapticProps } from '../components/shared/motion'
+import { blankDesign } from '../utils/designFactory'
 
 type Section = 'mine' | 'public' | 'collaborative'
 
@@ -17,13 +20,30 @@ const sections: { id: Section; label: string }[] = [
 ]
 
 export function Browser() {
-  const { designs, loaded, duplicateDesign, deleteDesign } = useDesigns()
+  const { designs, loaded, duplicateDesign, deleteDesign, saveDesign } = useDesigns()
   const [section, setSection] = useState<Section>('mine')
   const haptic = useHapticProps()
+  const navigate = useNavigate()
+
+  function handleNewDesign() {
+    const blank = blankDesign()
+    saveDesign(blank)
+    navigate(`/designer?id=${blank.id}`)
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-semibold text-slate-100">Browser</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-strong">Browser</h1>
+        <motion.button
+          {...haptic}
+          type="button"
+          onClick={handleNewDesign}
+          className="flex items-center gap-1.5 rounded-xl bg-accent px-3 py-2 text-sm font-medium text-white"
+        >
+          <FilePlus2 size={15} /> New Design
+        </motion.button>
+      </div>
 
       <div className="flex flex-col gap-6 md:flex-row">
         <nav className="flex gap-2 overflow-x-auto md:w-48 md:flex-none md:flex-col md:overflow-visible">
@@ -48,7 +68,7 @@ export function Browser() {
           )}
           {section === 'public' && <Directory designs={designs} loaded={loaded} />}
           {section === 'collaborative' && (
-            <div className="rounded-2xl border border-dashed border-white/10 p-12 text-center text-text-muted">
+            <div className="rounded-2xl border border-dashed border-ink/10 p-12 text-center text-text-muted">
               Collaborative Designs is coming soon.
             </div>
           )}

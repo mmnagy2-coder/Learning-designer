@@ -51,7 +51,7 @@ const GENERATE_SYSTEM_PROMPT = `You are an expert learning designer specialising
   "description": "string",
   "modeOfDelivery": "blended",
   "aims": "string",
-  "outcomes": ["Apply", "Create"],
+  "outcomes": ["Apply focus-pulling technique to a two-person dialogue scene", "Evaluate lens choices for broadcast interview setups"],
   "tlas": [
     {
       "title": "string",
@@ -68,12 +68,16 @@ const GENERATE_SYSTEM_PROMPT = `You are an expert learning designer specialising
           "description": "string"
         }
       ],
-      "resources": []
+      "resources": [
+        { "title": "string", "url": "https://..." }
+      ]
     }
   ]
 }
 
-Use realistic MetFilm School film production contexts (camera, editing, VFX, sound, directing, AI tools). Weight activities toward hands-on practice and production (roughly 70% of total time) with acquisition and discussion making up the remainder (roughly 30%). modeOfDelivery must be one of: face-to-face, blended, wholly-online, async-online. type must be one of: acquisition, collaboration, discussion, inquiry, practice, production. assessmentType must be one of: none, formative, summative.`
+Use realistic MetFilm School film production contexts (camera, editing, VFX, sound, directing, AI tools). Weight activities toward hands-on practice and production (roughly 70% of total time) with acquisition and discussion making up the remainder (roughly 30%). modeOfDelivery must be one of: face-to-face, blended, wholly-online, async-online. type must be one of: acquisition, collaboration, discussion, inquiry, practice, production. assessmentType must be one of: none, formative, summative.
+
+Outcomes must be specific, assessable statements starting with a Bloom's taxonomy action verb and naming concrete subject content — not bare verb names. Include 1-3 resources per activity where genuinely useful: prefer stable, well-known URLs (official documentation such as Adobe or Blackmagic, BFI, ASC, ScreenSkills); if unsure an exact page exists, use a search URL like https://www.youtube.com/results?search_query=... — never invent a specific article URL you are not certain of.`
 
 const BALANCE_SYSTEM_PROMPT = `You are a pedagogic advisor reviewing a learning design for a film and media higher education session. Analyse the balance of learning types against best practice for practical creative education — flag if it's too acquisition-heavy, lacks peer collaboration, or has poorly distributed assessment. Be specific and constructive. Format your response in markdown with clear headings.`
 
@@ -127,12 +131,12 @@ export function AIAssistantPanel() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed inset-x-0 bottom-0 z-50 flex h-[85vh] flex-col rounded-t-2xl border border-white/10 bg-elevated/95 shadow-2xl backdrop-blur-lg md:inset-y-0 md:right-0 md:left-auto md:h-full md:w-[400px] md:rounded-none md:rounded-l-2xl"
+              className="fixed inset-x-0 bottom-0 z-50 flex h-[85vh] flex-col rounded-t-2xl border border-ink/10 bg-elevated/95 shadow-2xl backdrop-blur-lg md:inset-y-0 md:right-0 md:left-auto md:h-full md:w-[400px] md:rounded-none md:rounded-l-2xl"
             >
-              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <div className="flex items-center justify-between border-b border-ink/10 px-4 py-3">
                 <div className="flex items-center gap-2">
                   <Sparkles size={18} className="text-accent" />
-                  <h2 className="font-semibold text-slate-100">AI Assistant</h2>
+                  <h2 className="font-semibold text-strong">AI Assistant</h2>
                 </div>
                 <div className="flex items-center gap-1">
                   <motion.button
@@ -201,7 +205,7 @@ function SettingsSection({ model, setModel, keyStatus, setKeyStatus }: SettingsS
       <div>
         <p className="mb-1 text-xs font-medium text-text-muted">Claude API key</p>
         <p className="text-xs text-text-muted">
-          Set as the <code className="rounded bg-white/10 px-1 py-0.5">ANTHROPIC_API_KEY</code> environment variable in
+          Set as the <code className="rounded bg-ink/10 px-1 py-0.5">ANTHROPIC_API_KEY</code> environment variable in
           your Netlify site's settings — Site configuration → Environment variables. It's never entered here.
         </p>
         <div className="mt-2 flex items-center gap-3">
@@ -210,7 +214,7 @@ function SettingsSection({ model, setModel, keyStatus, setKeyStatus }: SettingsS
             type="button"
             onClick={testConnection}
             disabled={testing}
-            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-text-primary disabled:opacity-40"
+            className="rounded-lg border border-ink/10 bg-ink/5 px-3 py-1.5 text-xs font-medium text-text-primary disabled:opacity-40"
           >
             {testing ? 'Testing…' : 'Test Connection'}
           </motion.button>
@@ -227,7 +231,7 @@ function SettingsSection({ model, setModel, keyStatus, setKeyStatus }: SettingsS
           id="model-select"
           value={model}
           onChange={(e) => setModel(e.target.value)}
-          className="w-full rounded-lg bg-white/5 px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+          className="w-full rounded-lg bg-ink/5 px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
         >
           <option value="claude-3-5-sonnet-20241022" className="bg-surface">
             claude-3-5-sonnet-20241022
@@ -241,7 +245,7 @@ function SettingsSection({ model, setModel, keyStatus, setKeyStatus }: SettingsS
         </select>
       </div>
 
-      <div className="border-t border-white/10 pt-4">
+      <div className="border-t border-ink/10 pt-4">
         <motion.button
           {...haptic}
           type="button"
@@ -249,7 +253,7 @@ function SettingsSection({ model, setModel, keyStatus, setKeyStatus }: SettingsS
             showToast('Sample data will be restored', 'info')
             resetToSampleData()
           }}
-          className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-text-primary"
+          className="flex items-center gap-1.5 rounded-lg border border-ink/10 bg-ink/5 px-3 py-2 text-xs font-medium text-text-primary"
         >
           <RefreshCcw size={14} /> Reset to sample data
         </motion.button>
@@ -282,7 +286,7 @@ function AssistantSection({ mode, setMode, keyBlocked, model, currentDesign }: A
     <div>
       {keyBlocked && <KeyWarningBanner />}
 
-      <div className="mb-4 flex gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+      <div className="mb-4 flex gap-1 rounded-xl border border-ink/10 bg-ink/5 p-1">
         {MODES.map((m) => (
           <motion.button
             {...haptic}
@@ -313,7 +317,7 @@ function AssistantSection({ mode, setMode, keyBlocked, model, currentDesign }: A
 
 function NoDesignNotice() {
   return (
-    <div className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-text-muted">
+    <div className="rounded-xl border border-dashed border-ink/10 p-6 text-center text-sm text-text-muted">
       Open a design in the Designer to use this feature.
     </div>
   )
@@ -366,7 +370,7 @@ function GenerateDesignMode({ model }: { model: string }) {
         onChange={(e) => setPrompt(e.target.value)}
         placeholder="Teach students how to operate a broadcast camera in 2 hours with a class of 20."
         rows={4}
-        className="w-full resize-none rounded-lg bg-white/5 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+        className="w-full resize-none rounded-lg bg-ink/5 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
       />
       <motion.button
         {...haptic}
@@ -397,7 +401,7 @@ function GenerateDesignMode({ model }: { model: string }) {
 
       {generated && (
         <div className="rounded-lg border border-production/30 bg-production/10 p-3">
-          <p className="text-sm font-medium text-slate-100">{generated.name}</p>
+          <p className="text-sm font-medium text-strong">{generated.name}</p>
           <p className="mt-1 text-xs text-text-muted">
             {generated.tlas.length} TLAs · {generated.learningTimeMinutes} min target
           </p>
@@ -452,7 +456,7 @@ function BalanceCheckerMode({ model, design }: { model: string; design: Design |
       )}
 
       {result && (
-        <div className="prose prose-invert prose-sm max-w-none rounded-lg border border-white/10 bg-white/5 p-3 text-slate-100">
+        <div className="prose prose-invert prose-sm max-w-none rounded-lg border border-ink/10 bg-ink/5 p-3 text-strong">
           <ReactMarkdown>{result}</ReactMarkdown>
         </div>
       )}
@@ -482,7 +486,7 @@ function AdvisorMode({ model }: { model: string }) {
           <div
             key={i}
             className={`rounded-lg p-3 text-sm ${
-              m.role === 'user' ? 'ml-6 bg-accent/10 text-slate-100' : 'mr-6 bg-white/5 text-slate-100'
+              m.role === 'user' ? 'ml-6 bg-accent/10 text-strong' : 'mr-6 bg-ink/5 text-strong'
             }`}
           >
             {m.role === 'assistant' ? <ReactMarkdown>{m.content}</ReactMarkdown> : m.content}
@@ -510,7 +514,7 @@ function AdvisorMode({ model }: { model: string }) {
             if (e.key === 'Enter') submit()
           }}
           placeholder="Ask about your teaching..."
-          className="w-full rounded-lg bg-white/5 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+          className="w-full rounded-lg bg-ink/5 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
         />
         <motion.button
           {...haptic}
@@ -593,7 +597,7 @@ function ExportSummaryMode({ model, design }: { model: string; design: Design | 
 
       {result && (
         <>
-          <div className="prose prose-invert prose-sm max-h-96 max-w-none overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-3 text-slate-100">
+          <div className="prose prose-invert prose-sm max-h-96 max-w-none overflow-y-auto rounded-lg border border-ink/10 bg-ink/5 p-3 text-strong">
             <ReactMarkdown>{result}</ReactMarkdown>
           </div>
           <div className="flex gap-2">
@@ -601,7 +605,7 @@ function ExportSummaryMode({ model, design }: { model: string; design: Design | 
               {...haptic}
               type="button"
               onClick={copy}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-text-primary"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-ink/10 bg-ink/5 px-3 py-2 text-xs font-medium text-text-primary"
             >
               {copied ? <Check size={14} className="text-production" /> : <Copy size={14} />}
               {copied ? 'Copied!' : 'Copy to Clipboard'}
@@ -610,7 +614,7 @@ function ExportSummaryMode({ model, design }: { model: string; design: Design | 
               {...haptic}
               type="button"
               onClick={download}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-text-primary"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-ink/10 bg-ink/5 px-3 py-2 text-xs font-medium text-text-primary"
             >
               {downloaded ? <Check size={14} className="text-production" /> : <Download size={14} />}
               {downloaded ? 'Downloaded!' : 'Download as .md'}

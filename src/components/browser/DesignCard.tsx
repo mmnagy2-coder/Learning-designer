@@ -3,7 +3,7 @@
 // devices); the Directory shows a mini pie chart instead of action buttons.
 import { forwardRef } from 'react'
 import { motion } from 'framer-motion'
-import { Copy, Trash2 } from 'lucide-react'
+import { CalendarDays, Copy, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { Design } from '../../types'
 import { computeAnalytics } from '../../utils/calculateAnalytics'
@@ -47,12 +47,12 @@ export const DesignCard = forwardRef<HTMLDivElement, DesignCardProps>(function D
       variants={staggerItem}
       exit="exit"
       layout
-      className="group relative flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-lg cursor-pointer"
+      className="group relative flex flex-col gap-3 rounded-2xl border border-ink/10 bg-ink/5 p-5 shadow-xl backdrop-blur-lg cursor-pointer"
       onClick={() => navigate(`/designer?id=${design.id}`)}
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h3 className="font-semibold text-slate-100">{design.name}</h3>
+          <h3 className="font-semibold text-strong">{design.name}</h3>
           <p className="text-sm text-text-muted">{design.topic}</p>
         </div>
         <span className="shrink-0 rounded-full bg-accent/10 px-2 py-1 text-xs font-medium text-accent">
@@ -70,7 +70,19 @@ export const DesignCard = forwardRef<HTMLDivElement, DesignCardProps>(function D
         />
       )}
 
-      <p className="text-xs text-text-muted">Last modified {lastModified}</p>
+      <div className="flex items-center justify-between gap-2 text-xs text-text-muted">
+        <span>Last modified {lastModified}</span>
+        {design.sessionDate && (
+          <span className="flex items-center gap-1 rounded-full bg-ink/5 px-2 py-0.5 font-medium">
+            <CalendarDays size={12} />
+            {new Date(`${design.sessionDate}T00:00:00`).toLocaleDateString(undefined, {
+              weekday: 'short',
+              day: 'numeric',
+              month: 'short',
+            })}
+          </span>
+        )}
+      </div>
 
       {(onDuplicate || onDelete) && (
         <div className="flex justify-end gap-2 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
@@ -83,7 +95,7 @@ export const DesignCard = forwardRef<HTMLDivElement, DesignCardProps>(function D
                 e.stopPropagation()
                 onDuplicate(design.id)
               }}
-              className="flex items-center gap-1 rounded-lg bg-white/5 px-3 py-1.5 text-xs text-text-primary hover:bg-white/10"
+              className="flex items-center gap-1 rounded-lg bg-ink/5 px-3 py-1.5 text-xs text-text-primary hover:bg-ink/10"
             >
               <Copy size={14} /> Duplicate
             </motion.button>

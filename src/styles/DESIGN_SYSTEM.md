@@ -6,18 +6,27 @@ match an existing component rather than inventing a new pattern.
 
 ## Colors
 
-Mirrored in `tailwind.config.js` under `theme.extend.colors`, so use the Tailwind class names
-below (`bg-surface`, `text-text-primary`, `border-accent`, etc.) rather than hardcoded hex or
-arbitrary values in JSX.
+Theme tokens are CSS variables defined in `src/index.css` (`:root` = light theme, `.dark` =
+dark theme) and exposed through `tailwind.config.js`, so use the Tailwind class names below
+(`bg-surface`, `text-text-primary`, `border-accent`, etc.) rather than hardcoded hex or
+arbitrary values in JSX. **Never use `bg-white/…`, `border-white/…`, or `text-slate-100`** —
+those only work on a dark background; use `ink` and `strong` instead, which flip with the theme.
+
+| Token | Dark value | Light value | Tailwind class examples |
+|---|---|---|---|
+| background | `#0f0f1a` | `#f4f6fb` | `bg-background` |
+| surface | `#1a1a2e` | `#ffffff` | `bg-surface` |
+| elevated | `#16213e` | `#e9eef8` | `bg-elevated` |
+| border | `#0f3460` | `#cbd5e1` | `border-border` |
+| text-primary | `#e2e8f0` | `#0f172a` | `text-text-primary` |
+| text-muted | `#94a3b8` | `#475569` | `text-text-muted` |
+| strong | `#f1f5f9` | `#0f172a` | `text-strong` (headings/text on glass) |
+| ink | white | `#0f172a` | `bg-ink/5`, `border-ink/10` (glass surfaces) |
+
+Fixed colors, identical in both themes:
 
 | Token | Hex | Tailwind class examples |
 |---|---|---|
-| background | `#0f0f1a` | `bg-background` |
-| surface | `#1a1a2e` | `bg-surface` |
-| elevated | `#16213e` | `bg-elevated` |
-| border | `#0f3460` | `border-border` |
-| text-primary | `#e2e8f0` | `text-text-primary` |
-| text-muted | `#94a3b8` | `text-text-muted` |
 | accent | `#3b82f6` | `bg-accent`, `text-accent`, `ring-accent` |
 | acquisition | `#06b6d4` | `bg-acquisition`, `text-acquisition` |
 | collaboration | `#eab308` | `bg-collaboration`, `text-collaboration` |
@@ -70,13 +79,14 @@ opacity-only fade. Use the shared `useMotionVariants` helper in
 ## Elevation / Glass
 
 ```
-bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl shadow-xl
+bg-ink/5 backdrop-blur-lg border border-ink/10 rounded-2xl shadow-xl
 ```
 Applied to: TLA columns, design cards, AI Assistant panel, metadata header card, all modals.
-Use `bg-white/5` (not `/10`) on dark backgrounds to avoid muddiness.
+`ink` is white in dark mode and near-black in light mode, so the same recipe reads correctly
+in both themes. Use `bg-ink/5` (not `/10`) to avoid muddiness.
 
-Foreground text on glass must use `text-slate-100` (`#f1f5f9`) — verified against the dark
-background to meet 4.5:1 contrast minimum.
+Foreground text on glass must use `text-strong` — `#f1f5f9` in dark mode, `#0f172a` in light
+mode, both verified to meet the 4.5:1 contrast minimum against their backgrounds.
 
 ## Favicon
 

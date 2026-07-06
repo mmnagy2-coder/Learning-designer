@@ -16,7 +16,7 @@ export function DeleteConfirmModal({ design, onCancel, onConfirm }: DeleteConfir
     <Modal isOpen={design !== null} onClose={onCancel} labelledBy="delete-modal-title">
       {design && (
         <>
-          <h2 id="delete-modal-title" className="text-lg font-semibold text-slate-100">
+          <h2 id="delete-modal-title" className="text-lg font-semibold text-strong">
             Delete '{design.name}'?
           </h2>
           <p className="mt-2 text-sm text-text-muted">This cannot be undone.</p>
@@ -25,7 +25,7 @@ export function DeleteConfirmModal({ design, onCancel, onConfirm }: DeleteConfir
               {...haptic}
               type="button"
               onClick={onCancel}
-              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-text-primary"
+              className="rounded-xl border border-ink/10 bg-ink/5 px-4 py-2 text-sm text-text-primary"
             >
               Cancel
             </motion.button>

@@ -82,7 +82,7 @@ export function HeroSection() {
             {...haptic}
             type="button"
             onClick={() => navigate('/browser')}
-            className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 font-medium text-slate-100 backdrop-blur-lg"
+            className="rounded-xl border border-ink/10 bg-ink/5 px-6 py-3 font-medium text-strong backdrop-blur-lg"
           >
             Explore Designs →
           </motion.button>

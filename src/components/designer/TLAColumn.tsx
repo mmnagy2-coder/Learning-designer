@@ -23,6 +23,8 @@ interface TLAColumnProps {
   onMoveDown?: () => void
   canMoveUp?: boolean
   canMoveDown?: boolean
+  /** The design's topic, used to ground AI resource suggestions for this activity. */
+  designTopic?: string
 }
 
 function newRow(): LearningTypeRowModel {
@@ -39,7 +41,7 @@ function newRow(): LearningTypeRowModel {
   }
 }
 
-export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMoveUp, onMoveDown, canMoveUp, canMoveDown }: TLAColumnProps) {
+export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMoveUp, onMoveDown, canMoveUp, canMoveDown, designTopic }: TLAColumnProps) {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const haptic = useHapticProps()
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -75,7 +77,7 @@ export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMov
       initial={{ opacity: 0, x: 24 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 24, transition: { duration: 0.2 } }}
-      className="flex w-full shrink-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-xl backdrop-blur-lg md:w-80"
+      className="flex w-full shrink-0 flex-col overflow-hidden rounded-2xl border border-ink/10 bg-ink/5 shadow-xl backdrop-blur-lg md:w-80"
     >
       <ColorBar rows={tla.learningTypes} />
 
@@ -122,7 +124,7 @@ export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMov
           id={`title-${tla.id}`}
           value={tla.title}
           onChange={(e) => onChange({ ...tla, title: e.target.value })}
-          className="flex-1 truncate bg-transparent text-base font-semibold text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent rounded"
+          className="flex-1 truncate bg-transparent text-base font-semibold text-strong focus:outline-none focus:ring-2 focus:ring-accent rounded"
         />
 
         {confirmingDelete ? (
@@ -166,30 +168,40 @@ export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMov
           {...haptic}
           type="button"
           onClick={addRow}
-          className="flex items-center justify-center gap-1 rounded-xl border border-dashed border-white/10 py-2 text-xs font-medium text-accent"
+          className="flex items-center justify-center gap-1 rounded-xl border border-dashed border-ink/10 py-2 text-xs font-medium text-accent"
         >
           <Plus size={14} /> Add Learning Type
         </motion.button>
       </div>
 
-      <div className="border-t border-white/10 px-4 py-2 text-xs font-medium text-text-muted">
+      <div className="border-t border-ink/10 px-4 py-2 text-xs font-medium text-text-muted">
         Total: {totalMinutes} min
       </div>
 
-      <div className="border-t border-white/10 px-4">
+      <div className="border-t border-ink/10 px-4">
         <Collapsible title="Notes">
           <textarea
             value={tla.notes}
             onChange={(e) => onChange({ ...tla, notes: e.target.value })}
             placeholder="Notes for this activity..."
             rows={3}
-            className="w-full resize-none rounded-lg bg-white/5 px-2 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full resize-none rounded-lg bg-ink/5 px-2 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
           />
         </Collapsible>
       </div>
 
-      <div className="border-t border-white/10 px-4">
-        <ResourcesList resources={tla.resources} onChange={(resources) => onChange({ ...tla, resources })} />
+      <div className="border-t border-ink/10 px-4">
+        <ResourcesList
+          resources={tla.resources}
+          onChange={(resources) => onChange({ ...tla, resources })}
+          suggestContext={[
+            designTopic ? `Course topic: ${designTopic}` : '',
+            `Activity: ${tla.title}`,
+            ...tla.learningTypes.map((r) => r.description).filter(Boolean),
+          ]
+            .filter(Boolean)
+            .join('\n')}
+        />
       </div>
     </motion.div>
   )

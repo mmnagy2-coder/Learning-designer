@@ -51,4 +51,16 @@ export interface Design {
   updatedAt: string
   isPublic: boolean
   derivedFrom?: string
+  /** Module this session belongs to (see Module). Absent = unassigned. */
+  moduleId?: string
+  /** Scheduled date for this session, as YYYY-MM-DD. */
+  sessionDate?: string
+}
+
+/** A module groups several session designs, each with its own date. */
+export interface Module {
+  id: string
+  name: string
+  createdAt: string
+  updatedAt: string
 }
