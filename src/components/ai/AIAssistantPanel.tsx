@@ -27,6 +27,7 @@ import { useToast } from '../shared/Toast'
 import { useHapticProps } from '../shared/motion'
 import { SkeletonCard } from '../shared/SkeletonCard'
 import { hydrateGeneratedDesign } from '../../utils/importDesign'
+import { DEFAULT_MODEL, SUPPORTED_MODELS, sanitizeModel } from '../../utils/aiModels'
 import { useAI, stripCodeFences, type ChatMessage } from './useAI'
 
 type Section = 'assistant' | 'settings'
@@ -39,7 +40,6 @@ const MODES: { id: Mode; label: string }[] = [
   { id: 'summary', label: 'Summary' },
 ]
 
-const DEFAULT_MODEL = 'claude-3-5-sonnet-20241022'
 
 const GENERATE_SYSTEM_PROMPT = `You are an expert learning designer specialising in higher education film and media production pedagogy. You use Laurillard's Conversational Framework (Acquisition, Collaboration, Discussion, Inquiry, Practice, Production). When asked to generate a learning design, return ONLY valid JSON with no markdown fences and no explanatory text, matching exactly this shape:
 
@@ -91,7 +91,10 @@ export function AIAssistantPanel() {
   const [mode, setMode] = useState<Mode>('generate')
   const haptic = useHapticProps()
 
-  const [model, setModel] = useLocalStorage('ld_claude_model', DEFAULT_MODEL)
+  const [storedModel, setModel] = useLocalStorage('ld_claude_model', DEFAULT_MODEL)
+  // A browser may still have a retired model id persisted from an earlier version —
+  // sanitize on read so those users silently move to the current default.
+  const model = sanitizeModel(storedModel)
   const [keyStatus, setKeyStatus] = useLocalStorage<'valid' | 'invalid' | null>('ld_key_test_status', null)
 
   const location = useLocation()
@@ -233,15 +236,11 @@ function SettingsSection({ model, setModel, keyStatus, setKeyStatus }: SettingsS
           onChange={(e) => setModel(e.target.value)}
           className="w-full rounded-lg bg-ink/5 px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
         >
-          <option value="claude-3-5-sonnet-20241022" className="bg-surface">
-            claude-3-5-sonnet-20241022
-          </option>
-          <option value="claude-3-5-haiku-20241022" className="bg-surface">
-            claude-3-5-haiku-20241022
-          </option>
-          <option value="claude-3-opus-20240229" className="bg-surface">
-            claude-3-opus-20240229
-          </option>
+          {SUPPORTED_MODELS.map((m) => (
+            <option key={m.id} value={m.id} className="bg-surface">
+              {m.label}
+            </option>
+          ))}
         </select>
       </div>
 

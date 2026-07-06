@@ -8,6 +8,7 @@ import type { Resource } from '../../types'
 import { Collapsible } from '../shared/Collapsible'
 import { useHapticProps } from '../shared/motion'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
+import { DEFAULT_MODEL, sanitizeModel } from '../../utils/aiModels'
 import { useAI, stripCodeFences } from '../ai/useAI'
 
 const RESOURCES_SYSTEM_PROMPT = `You are a resource curator for higher education film and media production teaching. Given a learning activity, suggest 3-5 learning resources (readings, videos, official documentation, tools) that directly support it for undergraduate film production students. Prefer stable, well-known URLs: official documentation (e.g. Adobe, Blackmagic, ARRI), publisher pages, established film organisations (BFI, ASC, ScreenSkills), or specific YouTube channels. If you are not certain an exact URL exists, use a search URL instead, e.g. https://www.youtube.com/results?search_query=focus+pulling+tutorial — never invent a specific article or video URL you are unsure of. Return ONLY a valid JSON array of objects with exactly these keys: {"title": "string", "url": "string"} — no markdown fences, no other text.`
@@ -30,7 +31,8 @@ export function ResourcesList({ resources, onChange, suggestContext }: Resources
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
   const [suggestions, setSuggestions] = useState<SuggestedResource[]>([])
-  const [model] = useLocalStorage('ld_claude_model', 'claude-3-5-sonnet-20241022')
+  const [storedModel] = useLocalStorage('ld_claude_model', DEFAULT_MODEL)
+  const model = sanitizeModel(storedModel)
   const { send, loading, error } = useAI()
   const haptic = useHapticProps()
 

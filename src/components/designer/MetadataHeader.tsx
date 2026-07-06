@@ -9,6 +9,7 @@ import { LivePieChart } from './LivePieChart'
 import { useHapticProps } from '../shared/motion'
 import { useModules } from '../../hooks/useModules'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
+import { DEFAULT_MODEL, sanitizeModel } from '../../utils/aiModels'
 import { useAI, stripCodeFences } from '../ai/useAI'
 
 const MODES: { value: ModeOfDelivery; label: string }[] = [
@@ -291,7 +292,8 @@ const OUTCOMES_SYSTEM_PROMPT = `You are an expert learning designer for higher e
  * statements the user can add one by one, plus removable chips for any already added. */
 function OutcomeSuggestions({ design, onChange }: MetadataHeaderProps) {
   const [suggestions, setSuggestions] = useState<string[]>([])
-  const [model] = useLocalStorage('ld_claude_model', 'claude-3-5-sonnet-20241022')
+  const [storedModel] = useLocalStorage('ld_claude_model', DEFAULT_MODEL)
+  const model = sanitizeModel(storedModel)
   const { send, loading, error } = useAI()
   const haptic = useHapticProps()
 

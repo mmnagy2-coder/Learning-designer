@@ -55,7 +55,7 @@ export async function handler(event) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: model || 'claude-3-5-sonnet-20241022',
+        model: model || 'claude-sonnet-5',
         max_tokens: 4096,
         system: system || undefined,
         messages,
