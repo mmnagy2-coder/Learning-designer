@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:slnt,wght@-10..0,300;-10..0,400;-10..0,500;-10..0,600;-10..0,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  @apply bg-background text-text-primary;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+* {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
