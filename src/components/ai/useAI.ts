@@ -10,12 +10,11 @@ export interface ChatMessage {
 
 interface SendOptions {
   system?: string
-  apiKey: string
   model: string
 }
 
 function friendlyError(code: number | undefined): string {
-  if (code === 401) return 'Your API key appears invalid. Check it in Settings.'
+  if (code === 401) return 'The server’s Claude API key appears invalid.'
   if (code === 429) return 'Rate limit reached. Wait a moment and try again.'
   return 'Something went wrong connecting to Claude. Try again shortly.'
 }
@@ -40,7 +39,7 @@ export function useAI() {
       const res = await fetch('/.netlify/functions/claude-proxy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages, system: options.system, apiKey: options.apiKey, model: options.model }),
+        body: JSON.stringify({ messages, system: options.system, model: options.model }),
       })
       const data = await res.json()
       if (!res.ok) {

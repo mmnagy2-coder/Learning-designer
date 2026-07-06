@@ -1,6 +1,6 @@
-// Proxies chat requests to the Anthropic API so the API key never touches the browser's
-// network tab as a cross-origin request, and CORS is handled server-side. The key is supplied
-// per-request by the client (stored in the user's own localStorage) and is never persisted here.
+// Proxies chat requests to the Anthropic API so the API key never touches the browser.
+// The key comes from the ANTHROPIC_API_KEY environment variable set in Netlify's dashboard
+// (Site settings -> Environment variables) — it is never sent from or stored in the client.
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -25,6 +25,14 @@ export async function handler(event) {
     return jsonResponse(405, { error: 'Method not allowed', code: 405 })
   }
 
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    return jsonResponse(500, {
+      error: 'ANTHROPIC_API_KEY is not set in Netlify environment variables',
+      code: 500,
+    })
+  }
+
   let payload
   try {
     payload = JSON.parse(event.body || '{}')
@@ -32,11 +40,8 @@ export async function handler(event) {
     return jsonResponse(400, { error: 'Invalid request body', code: 400 })
   }
 
-  const { messages, system, apiKey, model } = payload
+  const { messages, system, model } = payload
 
-  if (!apiKey || typeof apiKey !== 'string') {
-    return jsonResponse(401, { error: 'Missing API key', code: 401 })
-  }
   if (!Array.isArray(messages) || messages.length === 0) {
     return jsonResponse(400, { error: 'Missing messages', code: 400 })
   }

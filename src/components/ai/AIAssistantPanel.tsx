@@ -1,7 +1,8 @@
 // VISUAL DESIGN BRIEF: A floating sparkle button anchors the bottom-right corner of every
 // page. It opens a 400px glass panel that springs in from the right (a full-width bottom
 // sheet below 768px), containing a gear-icon Settings tab and a pill-switched Assistant tab
-// with four AI-powered modes, all routed through the Netlify Claude proxy.
+// with four AI-powered modes, all routed through the Netlify Claude proxy. The Claude API key
+// itself lives server-side as a Netlify environment variable — nothing here ever asks for it.
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
@@ -11,8 +12,6 @@ import {
   Check,
   Copy,
   Download,
-  Eye,
-  EyeOff,
   Loader2,
   RefreshCcw,
   Send,
@@ -88,7 +87,6 @@ export function AIAssistantPanel() {
   const [mode, setMode] = useState<Mode>('generate')
   const haptic = useHapticProps()
 
-  const [apiKey, setApiKey] = useLocalStorage('ld_claude_api_key', '')
   const [model, setModel] = useLocalStorage('ld_claude_model', DEFAULT_MODEL)
   const [keyStatus, setKeyStatus] = useLocalStorage<'valid' | 'invalid' | null>('ld_key_test_status', null)
 
@@ -98,7 +96,9 @@ export function AIAssistantPanel() {
   const currentDesign =
     location.pathname.startsWith('/designer') ? (getDesign(searchParams.get('id') ?? '') ?? null) : null
 
-  const keyBlocked = !apiKey || keyStatus === 'invalid'
+  // The key itself lives server-side now, so we only block the UI if a Test Connection
+  // explicitly failed — there's nothing for the user to "set" client-side to unblock it.
+  const keyBlocked = keyStatus === 'invalid'
 
   return (
     <>
@@ -159,16 +159,9 @@ export function AIAssistantPanel() {
 
               <div className="flex-1 overflow-y-auto p-4">
                 {section === 'settings' ? (
-                  <SettingsSection
-                    apiKey={apiKey}
-                    setApiKey={setApiKey}
-                    model={model}
-                    setModel={setModel}
-                    keyStatus={keyStatus}
-                    setKeyStatus={setKeyStatus}
-                  />
+                  <SettingsSection model={model} setModel={setModel} keyStatus={keyStatus} setKeyStatus={setKeyStatus} />
                 ) : (
-                  <AssistantSection mode={mode} setMode={setMode} keyBlocked={keyBlocked} apiKey={apiKey} model={model} currentDesign={currentDesign} />
+                  <AssistantSection mode={mode} setMode={setMode} keyBlocked={keyBlocked} model={model} currentDesign={currentDesign} />
                 )}
               </div>
             </motion.div>
@@ -180,26 +173,22 @@ export function AIAssistantPanel() {
 }
 
 interface SettingsSectionProps {
-  apiKey: string
-  setApiKey: (v: string) => void
   model: string
   setModel: (v: string) => void
   keyStatus: 'valid' | 'invalid' | null
   setKeyStatus: (v: 'valid' | 'invalid' | null) => void
 }
 
-function SettingsSection({ apiKey, setApiKey, model, setModel, keyStatus, setKeyStatus }: SettingsSectionProps) {
-  const [showKey, setShowKey] = useState(false)
+function SettingsSection({ model, setModel, keyStatus, setKeyStatus }: SettingsSectionProps) {
   const [testing, setTesting] = useState(false)
   const { send } = useAI()
   const { resetToSampleData } = useDesigns()
   const { showToast } = useToast()
   const haptic = useHapticProps()
 
-  async function testKey() {
+  async function testConnection() {
     setTesting(true)
     const result = await send([{ role: 'user', content: 'Reply with only the word OK.' }], {
-      apiKey,
       model,
       system: 'Reply with only the word OK.',
     })
@@ -210,43 +199,23 @@ function SettingsSection({ apiKey, setApiKey, model, setModel, keyStatus, setKey
   return (
     <div className="space-y-6">
       <div>
-        <label htmlFor="api-key" className="mb-1 block text-xs font-medium text-text-muted">
-          Claude API key
-        </label>
-        <div className="flex gap-2">
-          <input
-            id="api-key"
-            type={showKey ? 'text' : 'password'}
-            value={apiKey}
-            onChange={(e) => {
-              setApiKey(e.target.value)
-              setKeyStatus(null)
-            }}
-            placeholder="sk-ant-..."
-            className="w-full rounded-lg bg-white/5 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
-          />
-          <motion.button
-            {...haptic}
-            type="button"
-            aria-label={showKey ? 'Hide API key' : 'Show API key'}
-            onClick={() => setShowKey((s) => !s)}
-            className="shrink-0 rounded-lg bg-white/5 px-2 text-text-muted"
-          >
-            {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
-          </motion.button>
-        </div>
+        <p className="mb-1 text-xs font-medium text-text-muted">Claude API key</p>
+        <p className="text-xs text-text-muted">
+          Set as the <code className="rounded bg-white/10 px-1 py-0.5">ANTHROPIC_API_KEY</code> environment variable in
+          your Netlify site's settings — Site configuration → Environment variables. It's never entered here.
+        </p>
         <div className="mt-2 flex items-center gap-3">
           <motion.button
             {...haptic}
             type="button"
-            onClick={testKey}
-            disabled={!apiKey || testing}
+            onClick={testConnection}
+            disabled={testing}
             className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-text-primary disabled:opacity-40"
           >
-            {testing ? 'Testing…' : 'Test Key'}
+            {testing ? 'Testing…' : 'Test Connection'}
           </motion.button>
-          {keyStatus === 'valid' && <span className="text-xs font-medium text-production">Key valid</span>}
-          {keyStatus === 'invalid' && <span className="text-xs font-medium text-inquiry">Key invalid</span>}
+          {keyStatus === 'valid' && <span className="text-xs font-medium text-production">Connected</span>}
+          {keyStatus === 'invalid' && <span className="text-xs font-medium text-inquiry">Not working</span>}
         </div>
       </div>
 
@@ -293,7 +262,7 @@ function KeyWarningBanner() {
   return (
     <div className="mb-4 flex items-start gap-2 rounded-xl border border-collaboration/30 bg-collaboration/10 p-3 text-xs text-collaboration">
       <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-      Add a valid Claude API key in Settings before using AI features
+      The last connection test failed — check ANTHROPIC_API_KEY in Netlify and Test Connection again in Settings.
     </div>
   )
 }
@@ -302,12 +271,11 @@ interface AssistantSectionProps {
   mode: Mode
   setMode: (m: Mode) => void
   keyBlocked: boolean
-  apiKey: string
   model: string
   currentDesign: Design | null
 }
 
-function AssistantSection({ mode, setMode, keyBlocked, apiKey, model, currentDesign }: AssistantSectionProps) {
+function AssistantSection({ mode, setMode, keyBlocked, model, currentDesign }: AssistantSectionProps) {
   const haptic = useHapticProps()
 
   return (
@@ -333,10 +301,10 @@ function AssistantSection({ mode, setMode, keyBlocked, apiKey, model, currentDes
 
       {!keyBlocked && (
         <>
-          {mode === 'generate' && <GenerateDesignMode apiKey={apiKey} model={model} />}
-          {mode === 'balance' && <BalanceCheckerMode apiKey={apiKey} model={model} design={currentDesign} />}
-          {mode === 'advisor' && <AdvisorMode apiKey={apiKey} model={model} />}
-          {mode === 'summary' && <ExportSummaryMode apiKey={apiKey} model={model} design={currentDesign} />}
+          {mode === 'generate' && <GenerateDesignMode model={model} />}
+          {mode === 'balance' && <BalanceCheckerMode model={model} design={currentDesign} />}
+          {mode === 'advisor' && <AdvisorMode model={model} />}
+          {mode === 'summary' && <ExportSummaryMode model={model} design={currentDesign} />}
         </>
       )}
     </div>
@@ -351,7 +319,7 @@ function NoDesignNotice() {
   )
 }
 
-function GenerateDesignMode({ apiKey, model }: { apiKey: string; model: string }) {
+function GenerateDesignMode({ model }: { model: string }) {
   const [prompt, setPrompt] = useState('')
   const [generated, setGenerated] = useState<Design | null>(null)
   const [parseError, setParseError] = useState<string | null>(null)
@@ -365,7 +333,7 @@ function GenerateDesignMode({ apiKey, model }: { apiKey: string; model: string }
     if (!prompt.trim()) return
     setParseError(null)
     setGenerated(null)
-    const text = await send([{ role: 'user', content: prompt }], { apiKey, model, system: GENERATE_SYSTEM_PROMPT })
+    const text = await send([{ role: 'user', content: prompt }], { model, system: GENERATE_SYSTEM_PROMPT })
     if (!text) return
     try {
       const parsed = JSON.parse(stripCodeFences(text))
@@ -447,14 +415,14 @@ function GenerateDesignMode({ apiKey, model }: { apiKey: string; model: string }
   )
 }
 
-function BalanceCheckerMode({ apiKey, model, design }: { apiKey: string; model: string; design: Design | null }) {
+function BalanceCheckerMode({ model, design }: { model: string; design: Design | null }) {
   const [result, setResult] = useState<string | null>(null)
   const { send, loading, error } = useAI()
   const haptic = useHapticProps()
 
   async function analyse() {
     if (!design) return
-    const text = await send([{ role: 'user', content: JSON.stringify(design) }], { apiKey, model, system: BALANCE_SYSTEM_PROMPT })
+    const text = await send([{ role: 'user', content: JSON.stringify(design) }], { model, system: BALANCE_SYSTEM_PROMPT })
     if (text) setResult(text)
   }
 
@@ -492,7 +460,7 @@ function BalanceCheckerMode({ apiKey, model, design }: { apiKey: string; model: 
   )
 }
 
-function AdvisorMode({ apiKey, model }: { apiKey: string; model: string }) {
+function AdvisorMode({ model }: { model: string }) {
   const [history, setHistory] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const { send, loading, error } = useAI()
@@ -503,7 +471,7 @@ function AdvisorMode({ apiKey, model }: { apiKey: string; model: string }) {
     const nextHistory: ChatMessage[] = [...history, { role: 'user', content: input }]
     setHistory(nextHistory)
     setInput('')
-    const text = await send(nextHistory, { apiKey, model, system: ADVISOR_SYSTEM_PROMPT })
+    const text = await send(nextHistory, { model, system: ADVISOR_SYSTEM_PROMPT })
     if (text) setHistory((h) => [...h, { role: 'assistant', content: text }])
   }
 
@@ -559,7 +527,7 @@ function AdvisorMode({ apiKey, model }: { apiKey: string; model: string }) {
   )
 }
 
-function ExportSummaryMode({ apiKey, model, design }: { apiKey: string; model: string; design: Design | null }) {
+function ExportSummaryMode({ model, design }: { model: string; design: Design | null }) {
   const [result, setResult] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [downloaded, setDownloaded] = useState(false)
@@ -568,7 +536,7 @@ function ExportSummaryMode({ apiKey, model, design }: { apiKey: string; model: s
 
   async function generate() {
     if (!design) return
-    const text = await send([{ role: 'user', content: JSON.stringify(design) }], { apiKey, model, system: SUMMARY_SYSTEM_PROMPT })
+    const text = await send([{ role: 'user', content: JSON.stringify(design) }], { model, system: SUMMARY_SYSTEM_PROMPT })
     if (text) setResult(text)
   }
 
