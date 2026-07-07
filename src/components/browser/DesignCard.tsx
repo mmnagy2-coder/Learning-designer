@@ -3,7 +3,7 @@
 // devices); the Directory shows a mini pie chart instead of action buttons.
 import { forwardRef } from 'react'
 import { motion } from 'framer-motion'
-import { CalendarDays, Copy, Trash2 } from 'lucide-react'
+import { CalendarDays, Copy, LayoutTemplate, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { Design } from '../../types'
 import { computeAnalytics } from '../../utils/calculateAnalytics'
@@ -23,13 +23,15 @@ interface DesignCardProps {
   showPieChart?: boolean
   onDuplicate?: (id: string) => void
   onDelete?: (design: Design) => void
+  /** Publish/unpublish this design in the local template library. */
+  onToggleTemplate?: (design: Design) => void
 }
 
 // AnimatePresence (popLayout mode, used in MyDesigns) needs a ref to measure this element
 // during its exit animation, so this must be a forwardRef component rather than a plain
 // function component.
 export const DesignCard = forwardRef<HTMLDivElement, DesignCardProps>(function DesignCard(
-  { design, showPieChart = false, onDuplicate, onDelete },
+  { design, showPieChart = false, onDuplicate, onDelete, onToggleTemplate },
   ref
 ) {
   const navigate = useNavigate()
@@ -84,8 +86,25 @@ export const DesignCard = forwardRef<HTMLDivElement, DesignCardProps>(function D
         )}
       </div>
 
-      {(onDuplicate || onDelete) && (
+      {(onDuplicate || onDelete || onToggleTemplate) && (
         <div className="flex justify-end gap-2 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
+          {onToggleTemplate && (
+            <motion.button
+              {...haptic}
+              type="button"
+              aria-pressed={Boolean(design.isTemplate)}
+              aria-label={design.isTemplate ? `Unpublish ${design.name} as template` : `Publish ${design.name} as template`}
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleTemplate(design)
+              }}
+              className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs ${
+                design.isTemplate ? 'bg-accent/15 text-accent' : 'bg-ink/5 text-text-primary hover:bg-ink/10'
+              }`}
+            >
+              <LayoutTemplate size={14} /> {design.isTemplate ? 'Template ✓' : 'Template'}
+            </motion.button>
+          )}
           {onDuplicate && (
             <motion.button
               {...haptic}

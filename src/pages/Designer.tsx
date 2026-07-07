@@ -286,6 +286,36 @@ function DesignerContent({ initialDesign, saveDesign, onNavigateToDesign }: Desi
                     onClick={async () => {
                       setExportOpen(false)
                       try {
+                        const { downloadDesignAsDocx } = await import('../utils/exportDocx')
+                        await downloadDesignAsDocx(design)
+                      } catch {
+                        showToast('Could not generate the Word file', 'error')
+                      }
+                    }}
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-ink/5"
+                  >
+                    Download as Word (.docx)
+                  </button>
+                  <button
+                    role="menuitem"
+                    onClick={async () => {
+                      setExportOpen(false)
+                      try {
+                        const { downloadDesignAsPdf } = await import('../utils/exportPdf')
+                        await downloadDesignAsPdf(design)
+                      } catch {
+                        showToast('Could not generate the PDF', 'error')
+                      }
+                    }}
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-ink/5"
+                  >
+                    Download as PDF
+                  </button>
+                  <button
+                    role="menuitem"
+                    onClick={async () => {
+                      setExportOpen(false)
+                      try {
                         await copyDesignToClipboard(design)
                         showToast('Copied to clipboard', 'success')
                       } catch {
@@ -358,6 +388,7 @@ function DesignerContent({ initialDesign, saveDesign, onNavigateToDesign }: Desi
                     canMoveUp={i > 0}
                     canMoveDown={i < design.tlas.length - 1}
                     designTopic={design.topic}
+                    outcomes={design.outcomeStatements}
                   />
                 ))}
               </div>
@@ -380,6 +411,7 @@ function DesignerContent({ initialDesign, saveDesign, onNavigateToDesign }: Desi
                           onChange={(updated) => updateTLA(tla.id, updated)}
                           onDelete={() => deleteTLA(tla.id)}
                           designTopic={design.topic}
+                          outcomes={design.outcomeStatements}
                         />
                       ))}
                     </AnimatePresence>

@@ -6,8 +6,9 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Plus, X, ChevronUp, ChevronDown } from 'lucide-react'
-import type { TLA, LearningTypeRow as LearningTypeRowModel } from '../../types'
+import { GripVertical, Plus, X, ChevronUp, ChevronDown, Target, BrainCircuit } from 'lucide-react'
+import type { TLA, LearningTypeRow as LearningTypeRowModel, OutcomeStatement, FourD } from '../../types'
+import { FOUR_DS } from '../../utils/fourDs'
 import { ColorBar } from './ColorBar'
 import { LearningTypeRow } from './LearningTypeRow'
 import { ResourcesList } from './ResourcesList'
@@ -25,6 +26,8 @@ interface TLAColumnProps {
   canMoveDown?: boolean
   /** The design's topic, used to ground AI resource suggestions for this activity. */
   designTopic?: string
+  /** The design's written outcomes, for the constructive-alignment chips. */
+  outcomes?: OutcomeStatement[]
 }
 
 function newRow(): LearningTypeRowModel {
@@ -41,7 +44,7 @@ function newRow(): LearningTypeRowModel {
   }
 }
 
-export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMoveUp, onMoveDown, canMoveUp, canMoveDown, designTopic }: TLAColumnProps) {
+export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMoveUp, onMoveDown, canMoveUp, canMoveDown, designTopic, outcomes = [] }: TLAColumnProps) {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const haptic = useHapticProps()
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -67,6 +70,22 @@ export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMov
 
   function addRow() {
     onChange({ ...tla, learningTypes: [...tla.learningTypes, newRow()] })
+  }
+
+  function toggleOutcome(id: string) {
+    const current = tla.outcomeIds ?? []
+    onChange({
+      ...tla,
+      outcomeIds: current.includes(id) ? current.filter((x) => x !== id) : [...current, id],
+    })
+  }
+
+  function toggleFourD(d: FourD) {
+    const current = tla.fourDs ?? []
+    onChange({
+      ...tla,
+      fourDs: current.includes(d) ? current.filter((x) => x !== d) : [...current, d],
+    })
   }
 
   return (
@@ -172,6 +191,61 @@ export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMov
         >
           <Plus size={14} /> Add Learning Type
         </motion.button>
+      </div>
+
+      {outcomes.length > 0 && (
+        <div className="border-t border-ink/10 px-4 py-2">
+          <p className="mb-1.5 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-text-muted">
+            <Target size={11} /> Serves outcomes
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {outcomes.map((o, i) => {
+              const active = (tla.outcomeIds ?? []).includes(o.id)
+              return (
+                <motion.button
+                  {...haptic}
+                  key={o.id}
+                  type="button"
+                  title={o.text}
+                  aria-pressed={active}
+                  aria-label={`Toggle outcome ${i + 1}: ${o.text}`}
+                  onClick={() => toggleOutcome(o.id)}
+                  className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
+                    active ? 'border-accent bg-accent/20 text-accent' : 'border-ink/10 text-text-muted'
+                  }`}
+                >
+                  LO{i + 1}
+                </motion.button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="border-t border-ink/10 px-4 py-2">
+        <p className="mb-1.5 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-text-muted">
+          <BrainCircuit size={11} /> 4Ds · AI literacy
+        </p>
+        <div className="flex flex-wrap gap-1">
+          {FOUR_DS.map((d) => {
+            const active = (tla.fourDs ?? []).includes(d.id)
+            return (
+              <motion.button
+                {...haptic}
+                key={d.id}
+                type="button"
+                title={d.hint}
+                aria-pressed={active}
+                onClick={() => toggleFourD(d.id)}
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                  active ? 'border-practice/60 bg-practice/15 text-practice' : 'border-ink/10 text-text-muted'
+                }`}
+              >
+                {d.label}
+              </motion.button>
+            )
+          })}
+        </div>
       </div>
 
       <div className="border-t border-ink/10 px-4 py-2 text-xs font-medium text-text-muted">

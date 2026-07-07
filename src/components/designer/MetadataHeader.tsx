@@ -3,14 +3,11 @@
 // collapsing to a single stacked column below 768px so the pie chart never crowds the fields.
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Loader2, Plus, Sparkles, X } from 'lucide-react'
 import type { Design, ModeOfDelivery } from '../../types'
 import { LivePieChart } from './LivePieChart'
+import { OutcomesEditor } from './OutcomesEditor'
 import { useHapticProps } from '../shared/motion'
 import { useModules } from '../../hooks/useModules'
-import { useLocalStorage } from '../../hooks/useLocalStorage'
-import { DEFAULT_MODEL, sanitizeModel } from '../../utils/aiModels'
-import { useAI, stripCodeFences } from '../ai/useAI'
 
 const MODES: { value: ModeOfDelivery; label: string }[] = [
   { value: 'face-to-face', label: 'Face-to-face' },
@@ -254,7 +251,7 @@ export function MetadataHeader({ design, onChange }: MetadataHeaderProps) {
           </div>
 
           <div>
-            <p className="mb-2 text-xs font-medium text-text-muted">Outcomes</p>
+            <p className="mb-2 text-xs font-medium text-text-muted">Bloom's levels</p>
             <div className="flex flex-wrap gap-2">
               {OUTCOME_OPTIONS.map((outcome) => {
                 const active = design.outcomes.includes(outcome)
@@ -274,114 +271,15 @@ export function MetadataHeader({ design, onChange }: MetadataHeaderProps) {
                 )
               })}
             </div>
-            <OutcomeSuggestions design={design} onChange={onChange} />
           </div>
+
+          <OutcomesEditor design={design} onChange={onChange} />
 
           <div className="flex justify-center sm:hidden">
             <LivePieChart design={design} size={160} />
           </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-const OUTCOMES_SYSTEM_PROMPT = `You are an expert learning designer for higher education film and media production. Given a session's name, topic, and aims, write 4-6 specific, assessable learning outcome statements for undergraduate film production students. Each starts with an action verb (Bloom's taxonomy) and names concrete subject content, e.g. "Apply focus-pulling technique to a two-person dialogue scene". Return ONLY a valid JSON array of strings with no markdown fences and no other text.`
-
-/** Bloom's quick-tag chips live above; this adds AI-drafted subject-specific outcome
- * statements the user can add one by one, plus removable chips for any already added. */
-function OutcomeSuggestions({ design, onChange }: MetadataHeaderProps) {
-  const [suggestions, setSuggestions] = useState<string[]>([])
-  const [storedModel] = useLocalStorage('ld_claude_model', DEFAULT_MODEL)
-  const model = sanitizeModel(storedModel)
-  const { send, loading, error } = useAI()
-  const haptic = useHapticProps()
-
-  const customOutcomes = design.outcomes.filter((o) => !OUTCOME_OPTIONS.includes(o))
-
-  async function suggest() {
-    const text = await send(
-      [
-        {
-          role: 'user',
-          content: `Session name: ${design.name}\nTopic: ${design.topic || 'not specified'}\nAims: ${design.aims || 'not specified'}\nMode: ${design.modeOfDelivery}`,
-        },
-      ],
-      { model, system: OUTCOMES_SYSTEM_PROMPT }
-    )
-    if (!text) return
-    try {
-      const parsed = JSON.parse(stripCodeFences(text))
-      if (Array.isArray(parsed) && parsed.every((s) => typeof s === 'string')) {
-        setSuggestions(parsed.filter((s) => !design.outcomes.includes(s)))
-      }
-    } catch {
-      // Malformed response — the button stays available to retry.
-    }
-  }
-
-  function addOutcome(outcome: string) {
-    onChange({ ...design, outcomes: [...design.outcomes, outcome] })
-    setSuggestions((prev) => prev.filter((s) => s !== outcome))
-  }
-
-  function removeOutcome(outcome: string) {
-    onChange({ ...design, outcomes: design.outcomes.filter((o) => o !== outcome) })
-  }
-
-  return (
-    <div className="mt-3 space-y-2">
-      {customOutcomes.length > 0 && (
-        <ul className="space-y-1">
-          {customOutcomes.map((outcome) => (
-            <li
-              key={outcome}
-              className="flex items-start justify-between gap-2 rounded-lg bg-accent/10 px-3 py-1.5 text-xs text-text-primary"
-            >
-              <span>{outcome}</span>
-              <motion.button
-                {...haptic}
-                type="button"
-                aria-label={`Remove outcome: ${outcome}`}
-                onClick={() => removeOutcome(outcome)}
-                className="shrink-0 text-text-muted hover:text-inquiry"
-              >
-                <X size={13} />
-              </motion.button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <motion.button
-        {...haptic}
-        type="button"
-        onClick={suggest}
-        disabled={loading}
-        className="flex items-center gap-1.5 rounded-lg border border-ink/10 bg-ink/5 px-3 py-1.5 text-xs font-medium text-accent disabled:opacity-40"
-      >
-        {loading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />} Suggest outcomes
-      </motion.button>
-
-      {error && <p className="text-xs text-inquiry">{error}</p>}
-
-      {suggestions.length > 0 && (
-        <ul className="space-y-1">
-          {suggestions.map((s) => (
-            <li key={s}>
-              <motion.button
-                {...haptic}
-                type="button"
-                onClick={() => addOutcome(s)}
-                className="flex w-full items-start gap-2 rounded-lg border border-dashed border-ink/10 px-3 py-1.5 text-left text-xs text-text-muted hover:border-accent hover:text-text-primary"
-              >
-                <Plus size={13} className="mt-0.5 shrink-0 text-accent" />
-                {s}
-              </motion.button>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   )
 }

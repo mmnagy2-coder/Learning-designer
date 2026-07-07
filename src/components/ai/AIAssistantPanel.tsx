@@ -27,6 +27,8 @@ import { useToast } from '../shared/Toast'
 import { useHapticProps } from '../shared/motion'
 import { SkeletonCard } from '../shared/SkeletonCard'
 import { hydrateGeneratedDesign } from '../../utils/importDesign'
+import { computeAnalytics } from '../../utils/calculateAnalytics'
+import { computeAlignment } from '../../utils/alignment'
 import { DEFAULT_MODEL, SUPPORTED_MODELS, sanitizeModel } from '../../utils/aiModels'
 import { useAI, stripCodeFences, type ChatMessage } from './useAI'
 
@@ -51,11 +53,17 @@ const GENERATE_SYSTEM_PROMPT = `You are an expert learning designer specialising
   "description": "string",
   "modeOfDelivery": "blended",
   "aims": "string",
-  "outcomes": ["Apply focus-pulling technique to a two-person dialogue scene", "Evaluate lens choices for broadcast interview setups"],
+  "outcomes": ["Apply", "Evaluate"],
+  "outcomeStatements": [
+    { "text": "Apply focus-pulling technique to a two-person dialogue scene", "bloomLevel": "Apply" },
+    { "text": "Evaluate lens choices for broadcast interview setups", "bloomLevel": "Evaluate" }
+  ],
   "tlas": [
     {
       "title": "string",
       "notes": "",
+      "outcomeIndexes": [0],
+      "fourDs": [],
       "learningTypes": [
         {
           "type": "acquisition",
@@ -77,9 +85,32 @@ const GENERATE_SYSTEM_PROMPT = `You are an expert learning designer specialising
 
 Use realistic MetFilm School film production contexts (camera, editing, VFX, sound, directing, AI tools). Weight activities toward hands-on practice and production (roughly 70% of total time) with acquisition and discussion making up the remainder (roughly 30%). modeOfDelivery must be one of: face-to-face, blended, wholly-online, async-online. type must be one of: acquisition, collaboration, discussion, inquiry, practice, production. assessmentType must be one of: none, formative, summative.
 
-Outcomes must be specific, assessable statements starting with a Bloom's taxonomy action verb and naming concrete subject content — not bare verb names. Include 1-3 resources per activity where genuinely useful: prefer stable, well-known URLs (official documentation such as Adobe or Blackmagic, BFI, ASC, ScreenSkills); if unsure an exact page exists, use a search URL like https://www.youtube.com/results?search_query=... — never invent a specific article URL you are not certain of.`
+Constructive alignment rules: write 3-6 specific, assessable outcomeStatements (each starts with a Bloom's action verb and names concrete subject content; bloomLevel is one of Remember, Understand, Apply, Analyse, Evaluate, Create). Each activity's outcomeIndexes lists the zero-based indexes of the outcomeStatements it serves — every outcome must be served by at least one activity and every activity must serve at least one outcome. The top-level outcomes array lists only the Bloom's level names used.
 
-const BALANCE_SYSTEM_PROMPT = `You are a pedagogic advisor reviewing a learning design for a film and media higher education session. Analyse the balance of learning types against best practice for practical creative education — flag if it's too acquisition-heavy, lacks peer collaboration, or has poorly distributed assessment. Be specific and constructive. Format your response in markdown with clear headings.`
+If (and only if) an activity has students working with AI tools, tag it in fourDs with the relevant AI-literacy dimensions from: "delegation" (deciding what to hand to AI), "description" (communicating intent to AI), "discernment" (evaluating AI output), "diligence" (taking responsibility for AI-assisted work). Leave fourDs empty otherwise.
+
+Include 1-3 resources per activity where genuinely useful: prefer stable, well-known URLs (official documentation such as Adobe or Blackmagic, BFI, ASC, ScreenSkills); if unsure an exact page exists, use a search URL like https://www.youtube.com/results?search_query=... — never invent a specific article URL you are not certain of.`
+
+const BALANCE_SYSTEM_PROMPT = `You are a pedagogic advisor reviewing a learning design for a film and media higher education session, critiquing against explicit frameworks rather than giving generic commentary. The user message contains the design JSON plus pre-computed analytics and a constructive-alignment report — use those numbers; do not recompute them.
+
+Structure your markdown response with exactly these five sections:
+
+## Learning type balance
+Judge against best practice for practical creative education (Laurillard). Flag passive load when acquisition + discussion exceed roughly 40% of designed time; flag missing collaboration or inquiry where the subject suggests they belong.
+
+## Constructive alignment
+Use the supplied alignment report (Biggs). Name each orphaned outcome and each unaligned activity explicitly and say what to change. If alignment is clean, say so in one sentence. If no written outcomes exist yet, say that adding them is the priority before any other refinement.
+
+## Assessment coverage
+Where formative feedback falls in the sequence (too late? absent early on?), whether summative assessment matches the stated outcomes, and whether any outcome is never assessed.
+
+## Inclusive design (UDL)
+Two or three concrete prompts against Universal Design for Learning: multiple means of engagement, representation, and action/expression — grounded in the actual activities, not generic advice.
+
+## Top three changes
+The three highest-impact edits, ordered, each one sentence with the reason.
+
+Be specific and constructive; cite activity titles and minutes from the data. Keep the whole response under 450 words.`
 
 const ADVISOR_SYSTEM_PROMPT = `The educator teaches at MetFilm School (part of BIMM University) in London. Modules include camera operations, editing, VFX, colour grading, sound design, directing, and AI in film production. Students are undergraduate film production students. The educator is also researching AI's impact on cinema for an EdD at Bournemouth University. Answer as a specialist film pedagogy consultant.`
 
@@ -425,7 +456,14 @@ function BalanceCheckerMode({ model, design }: { model: string; design: Design |
 
   async function analyse() {
     if (!design) return
-    const text = await send([{ role: 'user', content: JSON.stringify(design) }], { model, system: BALANCE_SYSTEM_PROMPT })
+    // Send pre-computed numbers alongside the design so the model critiques against them
+    // instead of re-deriving (and mis-deriving) the arithmetic.
+    const payload = {
+      design,
+      analytics: computeAnalytics(design),
+      alignment: computeAlignment(design),
+    }
+    const text = await send([{ role: 'user', content: JSON.stringify(payload) }], { model, system: BALANCE_SYSTEM_PROMPT })
     if (text) setResult(text)
   }
 

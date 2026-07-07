@@ -3,9 +3,12 @@
 // a horizontal stacked bar for group-size distribution, and a designed-vs-target comparison.
 // All numbers animate in via count-up the first time this tab scrolls into view.
 import { useMemo } from 'react'
+import { AlertTriangle, BrainCircuit, CheckCircle2, Target } from 'lucide-react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import type { Design } from '../../types'
 import { computeAnalytics, type BinarySplit } from '../../utils/calculateAnalytics'
+import { computeAlignment } from '../../utils/alignment'
+import { FOUR_DS, FOUR_DS_ATTRIBUTION } from '../../utils/fourDs'
 import { CountUp } from '../shared/CountUp'
 import { SegmentedBar } from '../shared/SegmentedBar'
 
@@ -56,6 +59,105 @@ function MiniDonut({ title, splits }: { title: string; splits: BinarySplit[] }) 
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+function AlignmentCard({ design }: { design: Design }) {
+  const alignment = useMemo(() => computeAlignment(design), [design.outcomeStatements, design.tlas])
+
+  return (
+    <div className="rounded-2xl border border-ink/10 bg-ink/5 p-6 shadow-xl backdrop-blur-lg">
+      <h3 className="mb-1 flex items-center gap-2 text-lg font-semibold text-strong">
+        <Target size={18} className="text-accent" /> Constructive alignment
+      </h3>
+      <p className="mb-4 text-xs text-text-muted">
+        Which activities serve which learning outcomes — orphaned outcomes and unaligned activities
+        are the first things a validation panel looks for.
+      </p>
+
+      {!alignment.hasOutcomes ? (
+        <div className="rounded-xl border border-dashed border-ink/10 p-6 text-center text-sm text-text-muted">
+          Add written learning outcomes in the header, then tag each activity with the outcomes it
+          serves to see the alignment map here.
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <ul className="space-y-2">
+            {alignment.outcomes.map((o, i) => (
+              <li key={o.outcomeId} className="flex items-start gap-2 rounded-xl bg-ink/5 px-3 py-2 text-sm">
+                {o.tlaCount > 0 ? (
+                  <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-production" />
+                ) : (
+                  <AlertTriangle size={15} className="mt-0.5 shrink-0 text-inquiry" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <span className="mr-1.5 rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
+                    LO{i + 1}
+                  </span>
+                  <span className="text-text-primary">{o.text}</span>
+                </div>
+                <span className={`shrink-0 text-xs ${o.tlaCount > 0 ? 'text-text-muted' : 'font-medium text-inquiry'}`}>
+                  {o.tlaCount > 0 ? `${o.tlaCount} ${o.tlaCount === 1 ? 'activity' : 'activities'} · ${o.minutes} min` : 'orphaned — no activity serves this'}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          {alignment.unalignedTlas.length > 0 && (
+            <div className="rounded-xl border border-collaboration/40 bg-collaboration/10 px-3 py-2 text-xs text-collaboration">
+              <span className="font-semibold">Unaligned activities: </span>
+              {alignment.unalignedTlas.map((t) => t.title).join(', ')} — tag each with the outcome(s)
+              it serves via the LO chips on its card.
+            </div>
+          )}
+
+          {alignment.orphanedOutcomes.length === 0 && alignment.unalignedTlas.length === 0 && (
+            <div className="flex items-center gap-2 rounded-xl border border-production/40 bg-production/10 px-3 py-2 text-xs text-production">
+              <CheckCircle2 size={14} /> Every outcome is served by at least one activity, and every
+              activity serves at least one outcome.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FourDsCard({ design }: { design: Design }) {
+  const perD = useMemo(
+    () =>
+      FOUR_DS.map((d) => {
+        const tagged = design.tlas.filter((t) => (t.fourDs ?? []).includes(d.id))
+        return {
+          ...d,
+          count: tagged.length,
+          minutes: tagged.reduce((sum, t) => sum + t.learningTypes.reduce((s, r) => s + r.durationMinutes, 0), 0),
+        }
+      }),
+    [design.tlas]
+  )
+
+  if (perD.every((d) => d.count === 0)) return null
+
+  return (
+    <div className="rounded-2xl border border-ink/10 bg-ink/5 p-6 shadow-xl backdrop-blur-lg">
+      <h3 className="mb-1 flex items-center gap-2 text-lg font-semibold text-strong">
+        <BrainCircuit size={18} className="text-practice" /> AI literacy · the 4Ds
+      </h3>
+      <p className="mb-4 text-xs text-text-muted">
+        Where this session develops each dimension of working with AI.
+      </p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {perD.map((d) => (
+          <div key={d.id} className="rounded-xl bg-ink/5 px-3 py-2 text-center" title={d.hint}>
+            <div className={`text-lg font-bold ${d.count > 0 ? 'text-practice' : 'text-text-muted'}`}>{d.count}</div>
+            <div className="text-xs font-medium text-text-primary">{d.label}</div>
+            <div className="text-[10px] text-text-muted">{d.minutes} min</div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-[10px] text-text-muted">{FOUR_DS_ATTRIBUTION}</p>
     </div>
   )
 }
@@ -116,6 +218,10 @@ export function AnalysisTab({ design }: AnalysisTabProps) {
           </div>
         </div>
       </div>
+
+      <AlignmentCard design={design} />
+
+      <FourDsCard design={design} />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <MiniDonut title="Face to face vs Online" splits={analytics.faceToFaceVsOnline} />

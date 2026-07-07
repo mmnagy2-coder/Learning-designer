@@ -18,6 +18,7 @@ interface MyDesignsProps {
   loaded: boolean
   onDuplicate: (id: string) => void
   onDelete: (id: string) => void
+  onToggleTemplate?: (design: Design) => void
 }
 
 /** Dated sessions first (ascending — a term reads chronologically), undated ones last. */
@@ -28,7 +29,7 @@ function bySessionDate(a: Design, b: Design): number {
   return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
 }
 
-export function MyDesigns({ designs, loaded, onDuplicate, onDelete }: MyDesignsProps) {
+export function MyDesigns({ designs, loaded, onDuplicate, onDelete, onToggleTemplate }: MyDesignsProps) {
   const ready = useMinLoadingTime(loaded)
   const { modules } = useModules()
   const { container } = useStaggerVariants()
@@ -84,6 +85,7 @@ export function MyDesigns({ designs, loaded, onDuplicate, onDelete }: MyDesignsP
                 showToast('Design duplicated', 'success')
               }}
               onDelete={(d) => setPendingDelete(d)}
+              onToggleTemplate={onToggleTemplate}
             />
           ))}
         </AnimatePresence>

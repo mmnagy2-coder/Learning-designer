@@ -8,13 +8,15 @@ import { FilePlus2 } from 'lucide-react'
 import { useDesigns } from '../hooks/useDesigns'
 import { MyDesigns } from '../components/browser/MyDesigns'
 import { Directory } from '../components/browser/Directory'
+import { Templates } from '../components/browser/Templates'
 import { useHapticProps } from '../components/shared/motion'
 import { blankDesign } from '../utils/designFactory'
 
-type Section = 'mine' | 'public' | 'collaborative'
+type Section = 'mine' | 'templates' | 'public' | 'collaborative'
 
 const sections: { id: Section; label: string }[] = [
   { id: 'mine', label: 'My Designs' },
+  { id: 'templates', label: 'Templates' },
   { id: 'public', label: 'My Public Space' },
   { id: 'collaborative', label: 'Collaborative Designs' },
 ]
@@ -64,8 +66,15 @@ export function Browser() {
 
         <div className="flex-1">
           {section === 'mine' && (
-            <MyDesigns designs={designs} loaded={loaded} onDuplicate={duplicateDesign} onDelete={deleteDesign} />
+            <MyDesigns
+              designs={designs}
+              loaded={loaded}
+              onDuplicate={duplicateDesign}
+              onDelete={deleteDesign}
+              onToggleTemplate={(d) => saveDesign({ ...d, isTemplate: !d.isTemplate })}
+            />
           )}
+          {section === 'templates' && <Templates designs={designs} saveDesign={saveDesign} />}
           {section === 'public' && <Directory designs={designs} loaded={loaded} />}
           {section === 'collaborative' && (
             <div className="rounded-2xl border border-dashed border-ink/10 p-12 text-center text-text-muted">

@@ -1,8 +1,32 @@
-import type { AssessmentType, Design, LearningType, LearningTypeRow, ModeOfDelivery, Resource, TLA } from '../types'
+import type {
+  AssessmentType,
+  BloomLevel,
+  Design,
+  FourD,
+  LearningType,
+  LearningTypeRow,
+  ModeOfDelivery,
+  OutcomeStatement,
+  Resource,
+  TLA,
+} from '../types'
 
 const LEARNING_TYPES: LearningType[] = ['acquisition', 'collaboration', 'discussion', 'inquiry', 'practice', 'production']
 const MODES: ModeOfDelivery[] = ['face-to-face', 'blended', 'wholly-online', 'async-online']
 const ASSESSMENT_TYPES: AssessmentType[] = ['none', 'formative', 'summative']
+const FOUR_D_IDS: FourD[] = ['delegation', 'description', 'discernment', 'diligence']
+const BLOOM_LEVELS: BloomLevel[] = ['Remember', 'Understand', 'Apply', 'Analyse', 'Evaluate', 'Create']
+
+function isOutcomeStatement(value: unknown): value is OutcomeStatement {
+  if (typeof value !== 'object' || value === null) return false
+  const o = value as Record<string, unknown>
+  return typeof o.id === 'string' && typeof o.text === 'string'
+}
+
+/** Optional array fields: absent is fine; present means every item must validate. */
+function optionalArray(value: unknown, itemCheck: (v: unknown) => boolean): boolean {
+  return value === undefined || (Array.isArray(value) && value.every(itemCheck))
+}
 
 function isResource(value: unknown): value is Resource {
   if (typeof value !== 'object' || value === null) return false
@@ -38,7 +62,9 @@ function isTLA(value: unknown): value is TLA {
     Array.isArray(t.learningTypes) &&
     t.learningTypes.every(isLearningTypeRow) &&
     Array.isArray(t.resources) &&
-    t.resources.every(isResource)
+    t.resources.every(isResource) &&
+    optionalArray(t.outcomeIds, (v) => typeof v === 'string') &&
+    optionalArray(t.fourDs, (v) => FOUR_D_IDS.includes(v as FourD))
   )
 }
 
@@ -56,6 +82,7 @@ export function validateDesign(value: unknown): Design | null {
   if (typeof d.sizeOfClass !== 'number') return null
   if (typeof d.modeOfDelivery !== 'string' || !MODES.includes(d.modeOfDelivery as ModeOfDelivery)) return null
   if (!Array.isArray(d.outcomes) || !d.outcomes.every((o) => typeof o === 'string')) return null
+  if (!optionalArray(d.outcomeStatements, isOutcomeStatement)) return null
   if (!Array.isArray(d.tlas) || !d.tlas.every(isTLA)) return null
   if (typeof d.isPublic !== 'boolean') return null
 
@@ -98,7 +125,17 @@ function isGeneratedLearningTypeRow(value: unknown): value is Omit<LearningTypeR
   )
 }
 
-function isGeneratedTLA(value: unknown): value is { title: string; notes?: string; learningTypes: unknown[]; resources?: unknown[] } {
+interface GeneratedTLA {
+  title: string
+  notes?: string
+  learningTypes: unknown[]
+  resources?: unknown[]
+  /** Indexes into the generated outcomeStatements array (the model can't mint ids). */
+  outcomeIndexes?: unknown[]
+  fourDs?: unknown[]
+}
+
+function isGeneratedTLA(value: unknown): value is GeneratedTLA {
   if (typeof value !== 'object' || value === null) return false
   const t = value as Record<string, unknown>
   return typeof t.title === 'string' && Array.isArray(t.learningTypes) && t.learningTypes.every(isGeneratedLearningTypeRow)
@@ -125,6 +162,17 @@ export function hydrateGeneratedDesign(value: unknown): Design | null {
 
   const now = new Date().toISOString()
 
+  // The model emits outcome statements without ids and references them from activities by
+  // index; mint ids here and translate the indexes.
+  const rawStatements = Array.isArray(d.outcomeStatements) ? d.outcomeStatements : []
+  const outcomeStatements: OutcomeStatement[] = rawStatements
+    .filter((o): o is { text: string; bloomLevel?: string } => typeof (o as { text?: unknown })?.text === 'string')
+    .map((o) => ({
+      id: crypto.randomUUID(),
+      text: o.text,
+      bloomLevel: BLOOM_LEVELS.includes(o.bloomLevel as BloomLevel) ? (o.bloomLevel as BloomLevel) : undefined,
+    }))
+
   return {
     id: crypto.randomUUID(),
     name: d.name as string,
@@ -135,10 +183,11 @@ export function hydrateGeneratedDesign(value: unknown): Design | null {
     modeOfDelivery: d.modeOfDelivery as ModeOfDelivery,
     aims: d.aims as string,
     outcomes: d.outcomes as string[],
+    outcomeStatements: outcomeStatements.length > 0 ? outcomeStatements : undefined,
     createdAt: now,
     updatedAt: now,
     isPublic: false,
-    tlas: (d.tlas as { title: string; notes?: string; learningTypes: unknown[]; resources?: unknown[] }[]).map((t) => ({
+    tlas: (d.tlas as GeneratedTLA[]).map((t) => ({
       id: crypto.randomUUID(),
       title: t.title,
       notes: t.notes ?? '',
@@ -147,6 +196,10 @@ export function hydrateGeneratedDesign(value: unknown): Design | null {
         return { id: crypto.randomUUID(), title: res.title ?? '', url: res.url ?? '' }
       }),
       learningTypes: (t.learningTypes as Omit<LearningTypeRow, 'id'>[]).map((row) => ({ id: crypto.randomUUID(), ...row })),
+      outcomeIds: (t.outcomeIndexes ?? [])
+        .filter((i): i is number => typeof i === 'number' && i >= 0 && i < outcomeStatements.length)
+        .map((i) => outcomeStatements[i].id),
+      fourDs: (t.fourDs ?? []).filter((v): v is FourD => FOUR_D_IDS.includes(v as FourD)),
     })),
   }
 }

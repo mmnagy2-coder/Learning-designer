@@ -1,5 +1,17 @@
 import type { Design } from '../types'
 import { computeAnalytics } from './calculateAnalytics'
+import { FOUR_DS_ATTRIBUTION, fourDLabel } from './fourDs'
+
+/** "LO1, LO3" style reference for a TLA's aligned outcomes, or null when unaligned. */
+function outcomeRefs(design: Design, outcomeIds: string[] | undefined): string | null {
+  const statements = design.outcomeStatements ?? []
+  if (!outcomeIds?.length || statements.length === 0) return null
+  const refs = outcomeIds
+    .map((id) => statements.findIndex((s) => s.id === id))
+    .filter((i) => i >= 0)
+    .map((i) => `LO${i + 1}`)
+  return refs.length > 0 ? refs.join(', ') : null
+}
 
 function download(filename: string, content: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType })
@@ -32,16 +44,32 @@ export function designToMarkdown(design: Design): string {
   lines.push(`## Aims`)
   lines.push(design.aims || '_None specified_')
   lines.push('')
-  lines.push(`## Outcomes`)
-  design.outcomes.forEach((o) => lines.push(`- ${o}`))
+  const statements = design.outcomeStatements ?? []
+  lines.push(`## Learning outcomes`)
+  if (statements.length > 0) {
+    statements.forEach((s, i) =>
+      lines.push(`- **LO${i + 1}.** ${s.text}${s.bloomLevel ? ` _(${s.bloomLevel})_` : ''}`)
+    )
+  } else if (design.outcomes.length > 0) {
+    design.outcomes.forEach((o) => lines.push(`- ${o}`))
+  } else {
+    lines.push('_None specified_')
+  }
   lines.push('')
   lines.push(`## Description`)
   lines.push(design.description || '_None specified_')
   lines.push('')
   lines.push(`## Teaching & Learning Activities`)
+  let anyFourDs = false
   design.tlas.forEach((tla, i) => {
     lines.push('')
     lines.push(`### ${i + 1}. ${tla.title}`)
+    const refs = outcomeRefs(design, tla.outcomeIds)
+    if (refs) lines.push(`_Serves ${refs}_`)
+    if (tla.fourDs?.length) {
+      anyFourDs = true
+      lines.push(`_AI literacy (4Ds): ${tla.fourDs.map(fourDLabel).join(', ')}_`)
+    }
     if (tla.notes) lines.push(`_${tla.notes}_`)
     tla.learningTypes.forEach((row) => {
       lines.push(
@@ -58,6 +86,11 @@ export function designToMarkdown(design: Design): string {
       tla.resources.forEach((r) => lines.push(`- [${r.title}](${r.url})`))
     }
   })
+  if (anyFourDs) {
+    lines.push('')
+    lines.push(`---`)
+    lines.push(`_${FOUR_DS_ATTRIBUTION}_`)
+  }
   return lines.join('\n')
 }
 
