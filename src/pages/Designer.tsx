@@ -25,6 +25,7 @@ import { useHapticProps } from '../components/shared/motion'
 import { MetadataHeader } from '../components/designer/MetadataHeader'
 import { TLAColumn } from '../components/designer/TLAColumn'
 import { AnalysisTab } from '../components/designer/AnalysisTab'
+import { DurationIndicator } from '../components/designer/DurationIndicator'
 import { downloadDesignAsJson, downloadDesignAsMarkdown, copyDesignToClipboard } from '../utils/exportDesign'
 import { parseImportedDesign } from '../utils/importDesign'
 import { blankDesign, newTLA } from '../utils/designFactory'
@@ -211,20 +212,23 @@ function DesignerContent({ initialDesign, saveDesign, onNavigateToDesign }: Desi
       <MetadataHeader design={design} onChange={setDesign} />
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-1 rounded-xl border border-ink/10 bg-ink/5 p-1">
-          {(['timeline', 'analysis'] as const).map((t) => (
-            <motion.button
-              {...haptic}
-              key={t}
-              type="button"
-              onClick={() => setTab(t)}
-              className={`rounded-lg px-4 py-1.5 text-sm font-medium capitalize ${
-                tab === t ? 'bg-accent text-white' : 'text-text-muted'
-              }`}
-            >
-              {t}
-            </motion.button>
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex gap-1 rounded-xl border border-ink/10 bg-ink/5 p-1">
+            {(['timeline', 'analysis'] as const).map((t) => (
+              <motion.button
+                {...haptic}
+                key={t}
+                type="button"
+                onClick={() => setTab(t)}
+                className={`rounded-lg px-4 py-1.5 text-sm font-medium capitalize ${
+                  tab === t ? 'bg-accent text-white' : 'text-text-muted'
+                }`}
+              >
+                {t}
+              </motion.button>
+            ))}
+          </div>
+          <DurationIndicator design={design} />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
