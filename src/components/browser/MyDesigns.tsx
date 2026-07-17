@@ -4,7 +4,8 @@
 // plays an exit animation via AnimatePresence and the remaining cards re-stagger.
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { FolderOpen } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { ExternalLink, FolderOpen } from 'lucide-react'
 import type { Design, Module } from '../../types'
 import { useModules } from '../../hooks/useModules'
 import { useStaggerVariants } from '../shared/motion'
@@ -35,6 +36,7 @@ export function MyDesigns({ designs, loaded, onDuplicate, onDelete, onToggleTemp
   const { container } = useStaggerVariants()
   const [pendingDelete, setPendingDelete] = useState<Design | null>(null)
   const { showToast } = useToast()
+  const navigate = useNavigate()
 
   const groups = useMemo(() => {
     const moduleIds = new Set(modules.map((m) => m.id))
@@ -104,6 +106,13 @@ export function MyDesigns({ designs, loaded, onDuplicate, onDelete, onToggleTemp
               <span className="rounded-full bg-ink/5 px-2 py-0.5 text-xs font-medium normal-case">
                 {sessions.length} session{sessions.length === 1 ? '' : 's'}
               </span>
+              <button
+                type="button"
+                onClick={() => navigate(`/module?id=${module.id}`)}
+                className="flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium normal-case text-accent hover:bg-accent/20"
+              >
+                Module designer <ExternalLink size={11} />
+              </button>
             </h2>
             {renderGrid(sessions)}
           </section>

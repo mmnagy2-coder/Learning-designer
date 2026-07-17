@@ -5,6 +5,8 @@ import { AIAssistantPanel } from './components/ai/AIAssistantPanel'
 import { Start } from './pages/Start'
 import { Browser } from './pages/Browser'
 import { Designer } from './pages/Designer'
+import { ModuleDesigner } from './pages/ModuleDesigner'
+import { CourseDesigner } from './pages/CourseDesigner'
 
 export function App() {
   return (
@@ -16,6 +18,8 @@ export function App() {
             <Route path="/" element={<Start />} />
             <Route path="/browser" element={<Browser />} />
             <Route path="/designer" element={<Designer />} />
+            <Route path="/module" element={<ModuleDesigner />} />
+            <Route path="/course" element={<CourseDesigner />} />
           </Routes>
           <AIAssistantPanel />
         </div>

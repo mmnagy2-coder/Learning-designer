@@ -1,6 +1,7 @@
 import type { Design } from '../types'
 import { computeAnalytics } from './calculateAnalytics'
 import { FOUR_DS_ATTRIBUTION, fourDLabel } from './fourDs'
+import { UDL_ATTRIBUTION, udlCheckpointLabel } from './udl'
 
 /** "LO1, LO3" style reference for a TLA's aligned outcomes, or null when unaligned. */
 function outcomeRefs(design: Design, outcomeIds: string[] | undefined): string | null {
@@ -61,6 +62,7 @@ export function designToMarkdown(design: Design): string {
   lines.push('')
   lines.push(`## Teaching & Learning Activities`)
   let anyFourDs = false
+  let anyUdl = false
   design.tlas.forEach((tla, i) => {
     lines.push('')
     lines.push(`### ${i + 1}. ${tla.title}`)
@@ -69,6 +71,10 @@ export function designToMarkdown(design: Design): string {
     if (tla.fourDs?.length) {
       anyFourDs = true
       lines.push(`_AI literacy (4Ds): ${tla.fourDs.map(fourDLabel).join(', ')}_`)
+    }
+    if (tla.udl?.length) {
+      anyUdl = true
+      lines.push(`_UDL: ${tla.udl.map((id) => `${id} ${udlCheckpointLabel(id)}`).join('; ')}_`)
     }
     if (tla.notes) lines.push(`_${tla.notes}_`)
     tla.learningTypes.forEach((row) => {
@@ -86,10 +92,11 @@ export function designToMarkdown(design: Design): string {
       tla.resources.forEach((r) => lines.push(`- [${r.title}](${r.url})`))
     }
   })
-  if (anyFourDs) {
+  if (anyFourDs || anyUdl) {
     lines.push('')
     lines.push(`---`)
-    lines.push(`_${FOUR_DS_ATTRIBUTION}_`)
+    if (anyFourDs) lines.push(`_${FOUR_DS_ATTRIBUTION}_`)
+    if (anyUdl) lines.push(`_${UDL_ATTRIBUTION}_`)
   }
   return lines.join('\n')
 }

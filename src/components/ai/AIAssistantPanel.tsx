@@ -29,6 +29,7 @@ import { SkeletonCard } from '../shared/SkeletonCard'
 import { hydrateGeneratedDesign } from '../../utils/importDesign'
 import { computeAnalytics } from '../../utils/calculateAnalytics'
 import { computeAlignment } from '../../utils/alignment'
+import { computeUdlCoverage, udlSummaryForPrompt } from '../../utils/udl'
 import { DEFAULT_MODEL, SUPPORTED_MODELS, sanitizeModel } from '../../utils/aiModels'
 import { useAI, stripCodeFences, type ChatMessage } from './useAI'
 
@@ -64,6 +65,7 @@ const GENERATE_SYSTEM_PROMPT = `You are an expert learning designer specialising
       "notes": "",
       "outcomeIndexes": [0],
       "fourDs": [],
+      "udl": ["7.2", "5.1"],
       "learningTypes": [
         {
           "type": "acquisition",
@@ -89,6 +91,9 @@ Constructive alignment rules: write 3-6 specific, assessable outcomeStatements (
 
 If (and only if) an activity has students working with AI tools, tag it in fourDs with the relevant AI-literacy dimensions from: "delegation" (deciding what to hand to AI), "description" (communicating intent to AI), "discernment" (evaluating AI output), "diligence" (taking responsibility for AI-assisted work). Leave fourDs empty otherwise.
 
+Design inclusively per the CAST Universal Design for Learning Guidelines 3.0: across the whole design, deliberately offer multiple means of engagement, representation, and action & expression. Tag each activity's udl array with the 1-3 checkpoint ids it genuinely designs for (do not tag everything). Valid checkpoint ids and meanings:
+${udlSummaryForPrompt()}
+
 Include 1-3 resources per activity where genuinely useful: prefer stable, well-known URLs (official documentation such as Adobe or Blackmagic, BFI, ASC, ScreenSkills); if unsure an exact page exists, use a search URL like https://www.youtube.com/results?search_query=... — never invent a specific article URL you are not certain of.`
 
 const BALANCE_SYSTEM_PROMPT = `You are a pedagogic advisor reviewing a learning design for a film and media higher education session, critiquing against explicit frameworks rather than giving generic commentary. The user message contains the design JSON plus pre-computed analytics and a constructive-alignment report — use those numbers; do not recompute them.
@@ -105,7 +110,7 @@ Use the supplied alignment report (Biggs). Name each orphaned outcome and each u
 Where formative feedback falls in the sequence (too late? absent early on?), whether summative assessment matches the stated outcomes, and whether any outcome is never assessed.
 
 ## Inclusive design (UDL)
-Two or three concrete prompts against Universal Design for Learning: multiple means of engagement, representation, and action/expression — grounded in the actual activities, not generic advice.
+Critique against the CAST Universal Design for Learning Guidelines 3.0 using the supplied udlCoverage report (checkpoints tagged per principle: engagement, representation, action & expression). Name any principle with zero or thin coverage and suggest two or three concrete checkpoint-level design options (citing checkpoint numbers like 7.2 or 5.1) grounded in the actual activities — consider learner variability, accessibility of materials, and multiple means of expression. If activities are untagged, say tagging them is the first step.
 
 ## Top three changes
 The three highest-impact edits, ordered, each one sentence with the reason.
@@ -462,6 +467,7 @@ function BalanceCheckerMode({ model, design }: { model: string; design: Design |
       design,
       analytics: computeAnalytics(design),
       alignment: computeAlignment(design),
+      udlCoverage: computeUdlCoverage(design),
     }
     const text = await send([{ role: 'user', content: JSON.stringify(payload) }], { model, system: BALANCE_SYSTEM_PROMPT })
     if (text) setResult(text)

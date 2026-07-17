@@ -5,6 +5,7 @@ import { jsPDF } from 'jspdf'
 import type { Design } from '../types'
 import { computeAnalytics } from './calculateAnalytics'
 import { FOUR_DS_ATTRIBUTION, fourDLabel } from './fourDs'
+import { UDL_ATTRIBUTION, udlCheckpointLabel } from './udl'
 
 const MODE_LABELS: Record<Design['modeOfDelivery'], string> = {
   'face-to-face': 'Face-to-face',
@@ -88,6 +89,7 @@ export async function downloadDesignAsPdf(design: Design): Promise<void> {
 
   sectionHeading('Teaching & learning activities')
   let anyFourDs = false
+  let anyUdl = false
   design.tlas.forEach((tla, i) => {
     ensureRoom(20)
     write(`${i + 1}. ${tla.title}`, 12, 'bold', 0, 1.5)
@@ -101,6 +103,10 @@ export async function downloadDesignAsPdf(design: Design): Promise<void> {
     if (tla.fourDs?.length) {
       anyFourDs = true
       tags.push(`AI literacy (4Ds): ${tla.fourDs.map(fourDLabel).join(', ')}`)
+    }
+    if (tla.udl?.length) {
+      anyUdl = true
+      tags.push(`UDL: ${tla.udl.map((id) => `${id} ${udlCheckpointLabel(id)}`).join('; ')}`)
     }
     if (tags.length > 0) write(tags.join('  ·  '), 9, 'italic', 2, 1.5)
 
@@ -131,6 +137,11 @@ export async function downloadDesignAsPdf(design: Design): Promise<void> {
     ensureRoom(12)
     y += 4
     write(FOUR_DS_ATTRIBUTION, 7, 'italic')
+  }
+  if (anyUdl) {
+    ensureRoom(12)
+    if (!anyFourDs) y += 4
+    write(UDL_ATTRIBUTION, 7, 'italic')
   }
 
   doc.save(`${design.name.replace(/[^a-z0-9]+/gi, '_')}.pdf`)

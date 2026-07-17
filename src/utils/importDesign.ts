@@ -10,6 +10,7 @@ import type {
   Resource,
   TLA,
 } from '../types'
+import { isValidUdlId } from './udl'
 
 const LEARNING_TYPES: LearningType[] = ['acquisition', 'collaboration', 'discussion', 'inquiry', 'practice', 'production']
 const MODES: ModeOfDelivery[] = ['face-to-face', 'blended', 'wholly-online', 'async-online']
@@ -64,7 +65,8 @@ function isTLA(value: unknown): value is TLA {
     Array.isArray(t.resources) &&
     t.resources.every(isResource) &&
     optionalArray(t.outcomeIds, (v) => typeof v === 'string') &&
-    optionalArray(t.fourDs, (v) => FOUR_D_IDS.includes(v as FourD))
+    optionalArray(t.fourDs, (v) => FOUR_D_IDS.includes(v as FourD)) &&
+    optionalArray(t.udl, (v) => typeof v === 'string')
   )
 }
 
@@ -133,6 +135,7 @@ interface GeneratedTLA {
   /** Indexes into the generated outcomeStatements array (the model can't mint ids). */
   outcomeIndexes?: unknown[]
   fourDs?: unknown[]
+  udl?: unknown[]
 }
 
 function isGeneratedTLA(value: unknown): value is GeneratedTLA {
@@ -200,6 +203,7 @@ export function hydrateGeneratedDesign(value: unknown): Design | null {
         .filter((i): i is number => typeof i === 'number' && i >= 0 && i < outcomeStatements.length)
         .map((i) => outcomeStatements[i].id),
       fourDs: (t.fourDs ?? []).filter((v): v is FourD => FOUR_D_IDS.includes(v as FourD)),
+      udl: (t.udl ?? []).filter((v): v is string => typeof v === 'string' && isValidUdlId(v)),
     })),
   }
 }

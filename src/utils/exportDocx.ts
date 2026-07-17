@@ -15,6 +15,7 @@ import {
 import type { Design } from '../types'
 import { computeAnalytics } from './calculateAnalytics'
 import { FOUR_DS_ATTRIBUTION, fourDLabel } from './fourDs'
+import { UDL_ATTRIBUTION, udlCheckpointLabel } from './udl'
 
 const MODE_LABELS: Record<Design['modeOfDelivery'], string> = {
   'face-to-face': 'Face-to-face',
@@ -110,6 +111,7 @@ export async function downloadDesignAsDocx(design: Design): Promise<void> {
 
   children.push(heading('Teaching & learning activities', HeadingLevel.HEADING_1))
   let anyFourDs = false
+  let anyUdl = false
   design.tlas.forEach((tla, i) => {
     children.push(heading(`${i + 1}. ${tla.title}`, HeadingLevel.HEADING_2))
 
@@ -122,6 +124,10 @@ export async function downloadDesignAsDocx(design: Design): Promise<void> {
     if (tla.fourDs?.length) {
       anyFourDs = true
       tags.push(`AI literacy (4Ds): ${tla.fourDs.map(fourDLabel).join(', ')}`)
+    }
+    if (tla.udl?.length) {
+      anyUdl = true
+      tags.push(`UDL: ${tla.udl.map((id) => `${id} ${udlCheckpointLabel(id)}`).join('; ')}`)
     }
     if (tags.length > 0) {
       children.push(
@@ -162,6 +168,14 @@ export async function downloadDesignAsDocx(design: Design): Promise<void> {
       new Paragraph({
         spacing: { before: 360 },
         children: [new TextRun({ text: FOUR_DS_ATTRIBUTION, italics: true, size: 16 })],
+      })
+    )
+  }
+  if (anyUdl) {
+    children.push(
+      new Paragraph({
+        spacing: { before: anyFourDs ? 120 : 360 },
+        children: [new TextRun({ text: UDL_ATTRIBUTION, italics: true, size: 16 })],
       })
     )
   }

@@ -9,13 +9,17 @@ import { useDesigns } from '../hooks/useDesigns'
 import { MyDesigns } from '../components/browser/MyDesigns'
 import { Directory } from '../components/browser/Directory'
 import { Templates } from '../components/browser/Templates'
+import { ModulesSection } from '../components/browser/ModulesSection'
+import { CoursesSection } from '../components/browser/CoursesSection'
 import { useHapticProps } from '../components/shared/motion'
 import { blankDesign } from '../utils/designFactory'
 
-type Section = 'mine' | 'templates' | 'public' | 'collaborative'
+type Section = 'mine' | 'modules' | 'courses' | 'templates' | 'public' | 'collaborative'
 
 const sections: { id: Section; label: string }[] = [
   { id: 'mine', label: 'My Designs' },
+  { id: 'modules', label: 'Modules' },
+  { id: 'courses', label: 'Programmes' },
   { id: 'templates', label: 'Templates' },
   { id: 'public', label: 'My Public Space' },
   { id: 'collaborative', label: 'Collaborative Designs' },
@@ -74,6 +78,8 @@ export function Browser() {
               onToggleTemplate={(d) => saveDesign({ ...d, isTemplate: !d.isTemplate })}
             />
           )}
+          {section === 'modules' && <ModulesSection designs={designs} />}
+          {section === 'courses' && <CoursesSection />}
           {section === 'templates' && <Templates designs={designs} saveDesign={saveDesign} />}
           {section === 'public' && <Directory designs={designs} loaded={loaded} />}
           {section === 'collaborative' && (

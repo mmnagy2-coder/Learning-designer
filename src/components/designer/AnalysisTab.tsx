@@ -3,12 +3,13 @@
 // a horizontal stacked bar for group-size distribution, and a designed-vs-target comparison.
 // All numbers animate in via count-up the first time this tab scrolls into view.
 import { useMemo } from 'react'
-import { AlertTriangle, BrainCircuit, CheckCircle2, Target } from 'lucide-react'
+import { AlertTriangle, BrainCircuit, CheckCircle2, PersonStanding, Target } from 'lucide-react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import type { Design } from '../../types'
 import { computeAnalytics, type BinarySplit } from '../../utils/calculateAnalytics'
 import { computeAlignment } from '../../utils/alignment'
 import { FOUR_DS, FOUR_DS_ATTRIBUTION } from '../../utils/fourDs'
+import { computeUdlCoverage, udlCheckpointLabel, UDL_ATTRIBUTION } from '../../utils/udl'
 import { CountUp } from '../shared/CountUp'
 import { SegmentedBar } from '../shared/SegmentedBar'
 
@@ -162,6 +163,69 @@ function FourDsCard({ design }: { design: Design }) {
   )
 }
 
+function UdlCard({ design }: { design: Design }) {
+  const coverage = useMemo(() => computeUdlCoverage(design), [design.tlas])
+
+  if (!coverage.hasAnyTags) return null
+
+  return (
+    <div className="rounded-2xl border border-ink/10 bg-ink/5 p-6 shadow-xl backdrop-blur-lg">
+      <h3 className="mb-1 flex items-center gap-2 text-lg font-semibold text-strong">
+        <PersonStanding size={18} className="text-accent" /> Inclusive design · UDL
+      </h3>
+      <p className="mb-4 text-xs text-text-muted">
+        Coverage of the CAST UDL 3.0 checkpoints across this session's activities — aim for at
+        least one option under each of the three principles.
+      </p>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {coverage.byPrinciple.map((p) => (
+          <div key={p.principle} className="rounded-xl bg-ink/5 px-3 py-2">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs font-medium" style={{ color: p.color }}>
+                {p.label}
+              </span>
+              <span className="text-[10px] text-text-muted">
+                {p.tagged}/{p.total} checkpoints
+              </span>
+            </div>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/10">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${p.total > 0 ? (p.tagged / p.total) * 100 : 0}%`, backgroundColor: p.color }}
+              />
+            </div>
+            {p.tagged === 0 && (
+              <p className="mt-1 text-[10px] text-inquiry">No options designed under this principle yet.</p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-1">
+        {coverage.taggedCheckpoints.map((id) => (
+          <span
+            key={id}
+            title={udlCheckpointLabel(id)}
+            className="rounded-full border border-ink/10 bg-ink/5 px-2 py-0.5 text-[10px] text-text-muted"
+          >
+            <span className="font-semibold">{id}</span> {udlCheckpointLabel(id)}
+          </span>
+        ))}
+      </div>
+
+      {coverage.untaggedTlaIds.length > 0 && (
+        <p className="mt-3 text-[10px] text-text-muted">
+          {coverage.untaggedTlaIds.length}{' '}
+          {coverage.untaggedTlaIds.length === 1 ? 'activity has' : 'activities have'} no UDL tags yet —
+          use the UDL section on each activity card.
+        </p>
+      )}
+      <p className="mt-3 text-[10px] text-text-muted">{UDL_ATTRIBUTION}</p>
+    </div>
+  )
+}
+
 export function AnalysisTab({ design }: AnalysisTabProps) {
   const analytics = useMemo(() => computeAnalytics(design), [design.tlas])
 
@@ -222,6 +286,8 @@ export function AnalysisTab({ design }: AnalysisTabProps) {
       <AlignmentCard design={design} />
 
       <FourDsCard design={design} />
+
+      <UdlCard design={design} />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <MiniDonut title="Face to face vs Online" splits={analytics.faceToFaceVsOnline} />

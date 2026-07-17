@@ -3,6 +3,8 @@
 // collapsing to a single stacked column below 768px so the pie chart never crowds the fields.
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { ExternalLink } from 'lucide-react'
 import type { Design, ModeOfDelivery } from '../../types'
 import { LivePieChart } from './LivePieChart'
 import { OutcomesEditor } from './OutcomesEditor'
@@ -90,8 +92,16 @@ export function MetadataHeader({ design, onChange }: MetadataHeaderProps) {
 
           <div className="flex flex-wrap gap-4">
             <div className="min-w-40 flex-1">
-              <label htmlFor="design-module" className="mb-1 block text-xs font-medium text-text-muted">
+              <label htmlFor="design-module" className="mb-1 flex items-center gap-2 text-xs font-medium text-text-muted">
                 Module
+                {design.moduleId && (
+                  <Link
+                    to={`/module?id=${design.moduleId}`}
+                    className="flex items-center gap-0.5 font-medium text-accent hover:underline"
+                  >
+                    Open module designer <ExternalLink size={10} />
+                  </Link>
+                )}
               </label>
               {creatingModule ? (
                 <div className="flex gap-2">

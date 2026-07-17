@@ -12,6 +12,8 @@ const links = [
   { to: '/', label: 'Start' },
   { to: '/browser', label: 'Browser' },
   { to: '/designer', label: 'Designer' },
+  { to: '/module', label: 'Modules' },
+  { to: '/course', label: 'Programmes' },
 ]
 
 function navLinkClass(isActive: boolean) {

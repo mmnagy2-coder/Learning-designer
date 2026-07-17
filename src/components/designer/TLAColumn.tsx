@@ -9,6 +9,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Plus, X, ChevronUp, ChevronDown, Target, BrainCircuit } from 'lucide-react'
 import type { TLA, LearningTypeRow as LearningTypeRowModel, OutcomeStatement, FourD } from '../../types'
 import { FOUR_DS } from '../../utils/fourDs'
+import { UdlTagPicker } from './UdlTagPicker'
 import { ColorBar } from './ColorBar'
 import { LearningTypeRow } from './LearningTypeRow'
 import { ResourcesList } from './ResourcesList'
@@ -85,6 +86,14 @@ export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMov
     onChange({
       ...tla,
       fourDs: current.includes(d) ? current.filter((x) => x !== d) : [...current, d],
+    })
+  }
+
+  function toggleUdl(id: string) {
+    const current = tla.udl ?? []
+    onChange({
+      ...tla,
+      udl: current.includes(id) ? current.filter((x) => x !== id) : [...current, id],
     })
   }
 
@@ -246,6 +255,10 @@ export function TLAColumn({ tla, onChange, onDelete, dragDisabled = false, onMov
             )
           })}
         </div>
+      </div>
+
+      <div className="border-t border-ink/10 px-4">
+        <UdlTagPicker selected={tla.udl ?? []} onToggle={toggleUdl} />
       </div>
 
       <div className="border-t border-ink/10 px-4 py-2 text-xs font-medium text-text-muted">
